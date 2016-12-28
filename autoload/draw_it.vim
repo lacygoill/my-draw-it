@@ -1,3 +1,6 @@
+" TODO:
+" Implement arrow drawing
+
 " data "{{{
 
 " We initialize the state of the plugin to 'disabled'.
