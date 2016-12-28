@@ -5,8 +5,8 @@
 " Why?
 " Because if we edit the code, while the drawing mappings are installed, and
 " source it, then the next time we will toggle the state of the plugin with
-" `m_`, `m<space>`, `draw_it#draw_change_state()` will save the drawing mappings in
-" `s:draw_original_mappings`. From then, we won't be able to remove the
+" `m_`, `m<space>`, `draw_it#change_state()` will save the drawing mappings in
+" `s:original_mappings`. From then, we won't be able to remove the
 " mappings with `m|`, because the plugin will consider them as default.
 "
 " This issue is not limited to this particular case.
@@ -24,84 +24,84 @@
 " Another way of putting it: only initialize a variable ONCE.
 " Sourcing a file, again and again, should NOT RE-initialize a variable.
 
-let s:draw_state = get(s:, 'draw_state', 'disabled')
+let s:state = get(s:, 'state', 'disabled')
 
-let s:draw_key2char = {
-                      \ '<Left>'     : '-',
-                      \ '<Right>'    : '-',
-                      \ '<Down>'     : '|',
-                      \ '<Up>'       : '|',
-                      \ '<PageDown>' : '\',
-                      \ '<PageUp>'   : '/',
-                      \ '<Home>'     : '\',
-                      \ '<End>'      : '/',
-                      \ '<'          : '<',
-                      \ '>'          : '>',
-                      \ 'v'          : 'v',
-                      \ '^'          : '^',
+let s:key2char = {
+                 \ '<Left>'     : '-',
+                 \ '<Right>'    : '-',
+                 \ '<Down>'     : '|',
+                 \ '<Up>'       : '|',
+                 \ '<PageDown>' : '\',
+                 \ '<PageUp>'   : '/',
+                 \ '<Home>'     : '\',
+                 \ '<End>'      : '/',
+                 \ '<'          : '<',
+                 \ '>'          : '>',
+                 \ 'v'          : 'v',
+                 \ '^'          : '^',
+                 \ }
+
+let s:key2motion = {
+                   \ '<Left>'     : 'h',
+                   \ '<Right>'    : 'l',
+                   \ '<Down>'     : 'j',
+                   \ '<Up>'       : 'k',
+                   \ '<PageDown>' : 'lj',
+                   \ '<PageUp>'   : 'lk',
+                   \ '<End>'      : 'hj',
+                   \ '<Home>'     : 'hk',
+                   \ '<'          : 'h',
+                   \ '>'          : 'l',
+                   \ 'v'          : 'j',
+                   \ '^'          : 'k',
+                   \ '<S-Left>'   : 'h',
+                   \ '<S-Right>'  : 'l',
+                   \ '<S-Down>'   : 'j',
+                   \ '<S-Up>'     : 'k',
+                   \ }
+
+let s:crossing_keys = {
+                      \ '<Left>'     : '[-|+]',
+                      \ '<Right>'    : '[-|+]',
+                      \ '<Down>'     : '[-|+]',
+                      \ '<Up>'       : '[-|+]',
+                      \ '<PageDown>' : '[\/X]',
+                      \ '<PageUp>'   : '[\/X]',
+                      \ '<End>'      : '[\/X]',
+                      \ '<Home>'     : '[\/X]',
                       \ }
 
-let s:draw_key2motion = {
-                        \ '<Left>'     : 'h',
-                        \ '<Right>'    : 'l',
-                        \ '<Down>'     : 'j',
-                        \ '<Up>'       : 'k',
-                        \ '<PageDown>' : 'lj',
-                        \ '<PageUp>'   : 'lk',
-                        \ '<End>'      : 'hj',
-                        \ '<Home>'     : 'hk',
-                        \ '<'          : 'h',
-                        \ '>'          : 'l',
-                        \ 'v'          : 'j',
-                        \ '^'          : 'k',
-                        \ '<S-Left>'   : 'h',
-                        \ '<S-Right>'  : 'l',
-                        \ '<S-Down>'   : 'j',
-                        \ '<S-Up>'     : 'k',
-                        \ }
-
-let s:draw_crossing_keys = {
-                           \ '<Left>'     : '[-|+]',
-                           \ '<Right>'    : '[-|+]',
-                           \ '<Down>'     : '[-|+]',
-                           \ '<Up>'       : '[-|+]',
-                           \ '<PageDown>' : '[\/X]',
-                           \ '<PageUp>'   : '[\/X]',
-                           \ '<End>'      : '[\/X]',
-                           \ '<Home>'     : '[\/X]',
-                           \ }
-
-let s:draw_intersection = {
-                          \ '<Left>'     : '+',
-                          \ '<Right>'    : '+',
-                          \ '<Down>'     : '+',
-                          \ '<Up>'       : '+',
-                          \ '<PageDown>' : 'X',
-                          \ '<PageUp>'   : 'X',
-                          \ '<End>'      : 'X',
-                          \ '<Home>'     : 'X',
-                          \ }
+let s:intersection = {
+                     \ '<Left>'     : '+',
+                     \ '<Right>'    : '+',
+                     \ '<Down>'     : '+',
+                     \ '<Up>'       : '+',
+                     \ '<PageDown>' : 'X',
+                     \ '<PageUp>'   : 'X',
+                     \ '<End>'      : 'X',
+                     \ '<Home>'     : 'X',
+                     \ }
 
 "}}}
 " above_first_line "{{{
 
-fu! s:draw_above_first_line(key) abort
+fu! s:above_first_line(key) abort
     return count(['<Up>', '<PageUp>', '<Home>', '^'], a:key)
-            \ && s:draw_state ==# 'drawing' && line('.') == 1
+            \ && s:state ==# 'drawing' && line('.') == 1
 endfu
 
 "}}}
 " beyond_last_line"{{{
 
-fu! s:draw_beyond_last_line(key) abort
+fu! s:beyond_last_line(key) abort
     return count(['<Down>', '<PageDown>', '<End>', 'v'], a:key)
-            \ && s:draw_state ==# 'drawing' && line('.') == line('$')
+            \ && s:state ==# 'drawing' && line('.') == line('$')
 endfu
 
 "}}}
 " arrow "{{{
 
-fu! s:draw_arrow() abort
+fu! s:arrow() abort
     " let x0 = virtcol("'<")
     " let y0 = line("'<")
     " let x1 = virtcol("'>")
@@ -113,16 +113,16 @@ fu! s:draw_arrow() abort
     " exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr|'
     " exe 'norm! '.y1.'G'.x1."|\<C-v>".y0.'Gr|'
 
-    " call s:draw_set_char_at('+', x0, y0)
-    " call s:draw_set_char_at('+', x0, y1)
-    " call s:draw_set_char_at('+', x1, y0)
-    " call s:draw_set_char_at('+', x1, y1)
+    " call s:set_char_at('+', x0, y0)
+    " call s:set_char_at('+', x0, y1)
+    " call s:set_char_at('+', x1, y0)
+    " call s:set_char_at('+', x1, y1)
 endfu
 
 "}}}
 " box "{{{
 
-fu! s:draw_box() abort
+fu! s:box() abort
     let x0 = virtcol("'<")
     let y0 = line("'<")
     let x1 = virtcol("'>")
@@ -137,22 +137,22 @@ fu! s:draw_box() abort
     exe 'norm! '.y1.'G'.x1."|\<C-v>".y0.'Gr|'
 
     " draw the corners of the box
-    call s:draw_set_char_at('+', x0, y0)
-    call s:draw_set_char_at('+', x0, y1)
-    call s:draw_set_char_at('+', x1, y0)
-    call s:draw_set_char_at('+', x1, y1)
+    call s:set_char_at('+', x0, y0)
+    call s:set_char_at('+', x0, y1)
+    call s:set_char_at('+', x1, y0)
+    call s:set_char_at('+', x1, y1)
 endfu
 
 "}}}
 " change_state "{{{
 
-fu! draw_it#draw_change_state(erasing_mode) abort
+fu! draw_it#change_state(erasing_mode) abort
 
-    if s:draw_state ==# 'disabled'
+    if s:state ==# 'disabled'
         let s:ve_save  = &ve
         let s:ww_save  = &ww
         let s:sol_save = &sol
-        let s:draw_original_mappings = extend(myfuncs#save_mappings(['mdb', 'mde'], 'x', 1),
+        let s:original_mappings = extend(myfuncs#save_mappings(['mdb', 'mde'], 'x', 1),
                                      \        myfuncs#save_mappings([
                                      \                               '<Left>',
                                      \                               '<Right>',
@@ -206,19 +206,19 @@ fu! draw_it#draw_change_state(erasing_mode) abort
         " }}}
     endif
 
-    let s:draw_state = {
+    let s:state = {
                        \ 'disabled' : a:erasing_mode ? 'erasing'  : 'drawing' ,
                        \ 'drawing'  : a:erasing_mode ? 'erasing'  : 'disabled',
                        \ 'erasing'  : a:erasing_mode ? 'disabled' : 'drawing' ,
-                       \ }[s:draw_state]
+                       \ }[s:state]
 
-    call s:draw_toggle_mappings()
+    call s:toggle_mappings()
 endfu
 
 "}}}
 " ellipse "{{{
 
-fu! s:draw_ellipse() abort
+fu! s:ellipse() abort
     let x0    = virtcol("'<")
     let y0    = line("'<")
     let x1    = virtcol("'>")
@@ -236,7 +236,7 @@ fu! s:draw_ellipse() abort
     let xi = 0
     let yi = b
     let ei = 0
-    call s:draw_four(xi,yi,xoff,yoff,a,b)
+    call s:four(xi,yi,xoff,yoff,a,b)
     while xi <= a && yi >= 0
 
         let dy = a2 - twoa2*yi
@@ -263,26 +263,26 @@ fu! s:draw_ellipse() abort
         if xi > x1
             break
         endif
-        call s:draw_four(xi, yi, xoff, yoff, a, b)
+        call s:four(xi, yi, xoff, yoff, a, b)
     endwhile
 endfu
 
-fu! s:draw_four(x, y, xoff, yoff, a, b) abort
+fu! s:four(x, y, xoff, yoff, a, b) abort
     let x  = a:xoff + a:x
     let y  = a:yoff + a:y
     let lx = a:xoff - a:x
     let by = a:yoff - a:y
 
-    call s:draw_set_char_at('*',  x, y)
-    call s:draw_set_char_at('*', lx, y)
-    call s:draw_set_char_at('*', lx, by)
-    call s:draw_set_char_at('*',  x, by)
+    call s:set_char_at('*',  x, y)
+    call s:set_char_at('*', lx, y)
+    call s:set_char_at('*', lx, by)
+    call s:set_char_at('*',  x, by)
 endfu
 
 "}}}
 " install_mappings "{{{
 
-fu! s:draw_install_mappings() abort
+fu! s:install_mappings() abort
     let args = ' <nowait> <silent> '
 
     for l:key in [
@@ -311,13 +311,13 @@ fu! s:draw_install_mappings() abort
                  \ '<S-Up>',
                  \ ]
         exe 'nno '.args.' '.l:key
-                        \ .' :<C-U>call <SID>draw_shift_arrow('
-                        \ .string(s:draw_key2motion[l:key])
+                        \ .' :<C-U>call <SID>shift_arrow('
+                        \ .string(s:key2motion[l:key])
                         \ .')<CR>'
     endfor
 
-    xno <silent> mdb       :<C-U>call <SID>draw_box()<CR>
-    xno <silent> mde       :<C-U>call <SID>draw_ellipse()<CR>
+    xno <silent> mdb       :<C-U>call <SID>box()<CR>
+    xno <silent> mde       :<C-U>call <SID>ellipse()<CR>
 endfu
 
 "}}}
@@ -325,9 +325,9 @@ endfu
 
 fu! s:draw_it(key) abort
 
-    if s:draw_beyond_last_line(a:key)
+    if s:beyond_last_line(a:key)
         call append('.', '')
-    elseif s:draw_above_first_line(a:key)
+    elseif s:above_first_line(a:key)
         call append(0, '')
     endif
 
@@ -343,20 +343,20 @@ fu! s:draw_it(key) abort
              \ ],
              \     a:key)
 
-        call s:draw_replace_char(a:key)
-        exe 'norm! '.s:draw_key2motion[a:key]
-        call s:draw_replace_char(a:key)
+        call s:replace_char(a:key)
+        exe 'norm! '.s:key2motion[a:key]
+        call s:replace_char(a:key)
 
     elseif count(['^', 'v', '<', '>'], a:key)
-        exe 'norm! r'.s:draw_key2char[a:key].s:draw_key2motion[a:key].'r'.s:draw_key2char[a:key]
+        exe 'norm! r'.s:key2char[a:key].s:key2motion[a:key].'r'.s:key2char[a:key]
     endif
 endfu
 
 "}}}
 " remove_mappings "{{{
 
-fu! s:draw_remove_mappings() abort
-    if !exists('s:draw_original_mappings')
+fu! s:remove_mappings() abort
+    if !exists('s:original_mappings')
         return
     endif
 
@@ -391,13 +391,13 @@ fu! s:draw_remove_mappings() abort
         sil! exe 'xunmap '.l:key
     endfor
 
-    call myfuncs#restore_mappings(s:draw_original_mappings)
+    call myfuncs#restore_mappings(s:original_mappings)
 endfu
 
 "}}}
 " replace_char"{{{
 
-fu! s:draw_replace_char(key) abort
+fu! s:replace_char(key) abort
 
     " This function is called before and then after a motion (left, up, …).
     " It must return the character to draw.
@@ -416,18 +416,18 @@ fu! s:draw_replace_char(key) abort
 
     exe 'norm! r'
                \ .(
-               \   s:draw_state ==# 'erasing'
+               \   s:state ==# 'erasing'
                \   ? ' '
-               \   : cchar =~# s:draw_crossing_keys[a:key] && cchar !=# s:draw_key2char[a:key]
-               \         ? s:draw_intersection[a:key]
-               \         : s:draw_key2char[a:key]
+               \   : cchar =~# s:crossing_keys[a:key] && cchar !=# s:key2char[a:key]
+               \         ? s:intersection[a:key]
+               \         : s:key2char[a:key]
                \  )
 endfu
 
 "}}}
 " set_char_at "{{{
 
-fu! s:draw_set_char_at(char, x, y) abort
+fu! s:set_char_at(char, x, y) abort
     " move on line whose address is `y`
     exe a:y
 
@@ -443,7 +443,7 @@ endfu
 "}}}
 " shift_arrow "{{{
 
-fu! s:draw_shift_arrow(motion) abort
+fu! s:shift_arrow(motion) abort
     if a:motion ==# 'j' && line('.') == line('$')
         call append('.', '')
     elseif a:motion ==# 'k' && line('.') == 1
@@ -456,9 +456,9 @@ endfu
 "}}}
 " stop "{{{
 
-fu! draw_it#draw_stop() abort
-    let s:draw_state = 'disabled'
-    call s:draw_remove_mappings()
+fu! draw_it#stop() abort
+    let s:state = 'disabled'
+    call s:remove_mappings()
     let &ve  = get(s:, 've_save', &ve)
     let &ww  = get(s:, 'ww_save', &ww)
     let &sol = get(s:, 'sol_save', &sol)
@@ -468,12 +468,12 @@ endfu
 "}}}
 " toggle_mappings"{{{
 
-fu! s:draw_toggle_mappings() abort
-    if s:draw_state ==# 'disabled'
-        call draw_it#draw_stop()
+fu! s:toggle_mappings() abort
+    if s:state ==# 'disabled'
+        call draw_it#stop()
 
     else
-        call s:draw_install_mappings()
+        call s:install_mappings()
         set ve=all
 
         " We disable `'startofline'`, otherwise we get unintended results when
@@ -484,7 +484,7 @@ fu! s:draw_toggle_mappings() abort
         " unintended results when drawing and reaching column 0.
         set whichwrap-=h
 
-        echom '['.substitute(s:draw_state, '.', '\u&', '').'] '.'enabled'
+        echom '['.substitute(s:state, '.', '\u&', '').'] '.'enabled'
     endif
 endfu
 
