@@ -1,5 +1,22 @@
 " TODO:
-" Implement arrow drawing
+"
+" - Implement tip of arrow
+"
+" - Modify `s:restore_mappings()` so that it unmaps a key when the dictionary it
+"   received is empty.
+"   It will probably need a second argument, to know whether it must unmap
+"   a global or local mapping.
+"   Once done, reproduce the changes inside our own library (myfuncs#).
+"
+" - When drawing is enabled, add mappings on the `j` and `k` keys (in normal
+"   mode), so that they open a new line below/above when reaching the
+"   end/beginning of the buffer.
+"
+" - We will end up with many keys executing the same piece of code to open new
+"   lines. Refactor to avoid the repetition?
+"
+" - Add small help documentation which summarize what are the default keys to
+"   draw. When drawing, install a mapping which shows us this help (`m?`).
 
 " data "{{{
 
@@ -105,16 +122,50 @@ endfu
 " arrow "{{{
 
 fu! s:arrow() abort
+    let [x0, x1] = [virtcol("'<"), virtcol("'>")]
+    let [y0, y1] = [line("'<"),    line("'>")]
+
+    if y0 ==# y1
+    " horizontal arrow
+        exe 'norm! '.y0.'G'.x0.'|v'.x1.'|r_'
+    elseif x0 ==# x1
+    " vertical arrow
+        exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr|'
+    else
+        " diagonal arrow
+        "
+        " l2r = left to right
+        let l2r = virtcol("'<") < virtcol("'>") ? 1 : 0
+        let h   = y1 - y0
+        for i in range(0, h)
+            if l2r
+            " \
+            "  \
+            "   o---
+                call s:set_char_at('\', x0+i, y0+i)
+            else
+            "      /
+            "     /
+            " ---o
+                call s:set_char_at('/', x0-i, y0+i)
+            endif
+        endfor
+        norm! ro
+        " If we hit `O` in visual block mode, the positions of the marks '<, '>
+        " are updated:
+        "
+        "     '<    upper-left    →    upper-right corner
+        "     '>    lower-right   →    lower-left  "
+        exe 'norm! '.(l2r ? 'l' : 'h').'v'.x1.'|r_'
+    endif
 endfu
 
 "}}}
 " box "{{{
 
 fu! s:box() abort
-    let x0 = virtcol("'<")
-    let y0 = line("'<")
-    let x1 = virtcol("'>")
-    let y1 = line("'>")
+    let [x0, x1] = [virtcol("'<"), virtcol("'>")]
+    let [y0, y1] = [line("'<"),    line("'>")]
 
     " draw the horizontal sides of the box
     exe 'norm! '.y0.'G'.x0.'|v'.x1.'|r-'
@@ -140,7 +191,7 @@ fu! draw_it#change_state(erasing_mode) abort
         let s:ve_save  = &ve
         let s:ww_save  = &ww
         let s:sol_save = &sol
-        let s:original_mappings = extend(s:save_mappings(['mdb', 'mde'], 'x', 1),
+        let s:original_mappings = extend(s:save_mappings(['mda', 'mdb', 'mde'], 'x', 1),
                                 \        s:save_mappings([
                                 \                               '<Left>',
                                 \                               '<Right>',
@@ -163,6 +214,8 @@ fu! draw_it#change_state(erasing_mode) abort
                                 \                                 'n',
                                 \                                      1)
                                 \       )
+
+        let s:original_mappings = extend(s:original_mappings, s:save_mappings(['H', 'J', 'K', 'L'], 'n', 1))
 
         " The last argument passed to `s:save_mappings()` is 1. "{{{
         " This is very important. It means that we save global mappings.
@@ -278,7 +331,7 @@ fu! s:install_mappings() abort
                  \ '<End>',
                  \ ]
         exe 'nno '.args.' '.l:key
-                    \.' :<C-U>call <SID>draw_it('.string('<lt>'.l:key[1:]).')<CR>'
+                          \.' :<C-U>call <SID>draw_it('.string('<lt>'.l:key[1:]).')<CR>'
     endfor
 
     for l:key in ['<', '>', 'v', '^']
@@ -293,13 +346,18 @@ fu! s:install_mappings() abort
                  \ '<S-Up>',
                  \ ]
         exe 'nno '.args.' '.l:key
-                        \ .' :<C-U>call <SID>shift_arrow('
-                        \ .string(s:key2motion[l:key])
-                        \ .')<CR>'
+                         \ .' :<C-U>call <SID>shift_arrow('
+                         \ .string(s:key2motion[l:key])
+                         \ .')<CR>'
     endfor
 
-    xno <silent> mdb       :<C-U>call <SID>box()<CR>
-    xno <silent> mde       :<C-U>call <SID>ellipse()<CR>
+    for l:key in ['H', 'J', 'K', 'L']
+        exe 'nno '.args.' '.l:key.' 5'.tolower(l:key)
+    endfor
+
+    xno <silent> mda    :<C-U>call <SID>arrow()<CR>
+    xno <silent> mdb    :<C-U>call <SID>box()<CR>
+    xno <silent> mde    :<C-U>call <SID>ellipse()<CR>
 endfu
 
 "}}}
@@ -369,7 +427,7 @@ fu! s:remove_mappings() abort
         sil! exe 'nunmap '.l:key
     endfor
 
-    for l:key in ['mdb', 'mde']
+    for l:key in ['mda', 'mdb', 'mde']
         sil! exe 'xunmap '.l:key
     endfor
 
