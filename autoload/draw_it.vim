@@ -152,31 +152,31 @@ fu! draw_it#change_state(erasing_mode) abort
         let s:ve_save  = &ve
         let s:ww_save  = &ww
         let s:sol_save = &sol
-        let s:original_mappings = extend(myfuncs#save_mappings(['mdb', 'mde'], 'x', 1),
-                                     \        myfuncs#save_mappings([
-                                     \                               '<Left>',
-                                     \                               '<Right>',
-                                     \                               '<Down>',
-                                     \                               '<Up>',
-                                     \                               '<S-Left>',
-                                     \                               '<S-Right>',
-                                     \                               '<S-Down>',
-                                     \                               '<S-Up>',
-                                     \                               '<PageDown>',
-                                     \                               '<PageUp>',
-                                     \                               '<End>',
-                                     \                               '<Home>',
-                                     \                               '<',
-                                     \                               '>',
-                                     \                               'v',
-                                     \                               '^',
-                                     \                              ],
-                                     \
-                                     \                                 'n',
-                                     \                                      1)
-                                     \       )
+        let s:original_mappings = extend(s:save_mappings(['mdb', 'mde'], 'x', 1),
+                                \        s:save_mappings([
+                                \                               '<Left>',
+                                \                               '<Right>',
+                                \                               '<Down>',
+                                \                               '<Up>',
+                                \                               '<S-Left>',
+                                \                               '<S-Right>',
+                                \                               '<S-Down>',
+                                \                               '<S-Up>',
+                                \                               '<PageDown>',
+                                \                               '<PageUp>',
+                                \                               '<End>',
+                                \                               '<Home>',
+                                \                               '<',
+                                \                               '>',
+                                \                               'v',
+                                \                               '^',
+                                \                              ],
+                                \
+                                \                                 'n',
+                                \                                      1)
+                                \       )
 
-        " The last argument passed to `myfuncs#save_mappings()` is 1. "{{{
+        " The last argument passed to `s:save_mappings()` is 1. "{{{
         " This is very important. It means that we save global mappings.
         " We aren't interested in buffer-local ones.
         " Why?
@@ -391,7 +391,48 @@ fu! s:remove_mappings() abort
         sil! exe 'xunmap '.l:key
     endfor
 
-    call myfuncs#restore_mappings(s:original_mappings)
+    call s:restore_mappings(s:original_mappings)
+endfu
+
+"}}}
+" restore_mappings "{{{
+
+" Warning:
+" Don't try to restore a buffer local mapping unless you're sure that, when
+" `s:restore_mappings()` is called, you're in the same buffer where
+" `s:save_mappings()` was originally called.
+"
+" If you aren't in the same buffer, you could install a buffer-local mapping
+" inside a buffer where this mapping didn't exist before.
+" It could cause unexpected behavior on the user's system.
+"
+" Usage:
+" call s:restore_mappings(my_saved_mappings)
+"
+" `my_saved_mappings` is a dictionary obtained earlier by calling
+" `s:save_mappings()`.
+" Its keys are the keys used in the mappings.
+" Its values are the info about those mappings stored in sub-dictionaries.
+"
+" There's nothing special to pass to `s:restore_mappings()`, no other
+" argument, no wrapping inside a 3rd dictionary, or anything. Just this dictionary.
+
+fu! s:restore_mappings(mappings) abort
+
+    for mapping in values(a:mappings)
+        if !empty(mapping)
+            exe     mapping.mode
+               \ . (mapping.noremap ? 'noremap ' : 'map ')
+               \ . (mapping.buffer  ? ' <buffer> ' : '')
+               \ . (mapping.expr    ? ' <expr>   ' : '')
+               \ . (mapping.nowait  ? ' <nowait> ' : '')
+               \ . (mapping.silent  ? ' <silent> ' : '')
+               \ .  mapping.lhs
+               \ . ' '
+               \ . substitute(mapping.rhs, '<SID>', '<SNR>'.mapping.sid.'_', 'g')
+        endif
+    endfor
+
 endfu
 
 "}}}
@@ -423,6 +464,81 @@ fu! s:replace_char(key) abort
                \         : s:key2char[a:key]
                \  )
 endfu
+
+"}}}
+" save_mappings "{{{
+
+" Usage:
+"
+"     let my_global_mappings = s:save_mappings(['key1', 'key2', …], 'n', 1)
+"     let my_local_mappings  = s:save_mappings(['key1', 'key2', …], 'n', 0)
+"
+
+" Output example: "{{{
+"
+"     { '<left>' :
+"                \
+"                \ {'silent': 0,
+"                \ 'noremap': 1,
+"                \ 'lhs': '<Left>',
+"                \ 'mode': 'n',
+"                \ 'nowait': 0,
+"                \ 'expr': 0,
+"                \ 'sid': 7,
+"                \ 'rhs': ':echo ''foo''<CR>',
+"                \ 'buffer': 1},
+"                \
+"     \ '<right>':
+"                \
+"                \ { 'silent': 0,
+"                \ 'noremap': 1,
+"                \ 'lhs': '<Right>',
+"                \ 'mode': 'n',
+"                \ 'nowait': 0,
+"                \ 'expr': 0,
+"                \ 'sid': 7,
+"                \ 'rhs': ':echo ''bar''<CR>',
+"                \ 'buffer': 1,
+"                \ },
+"                \}
+"
+" }}}
+
+fu! s:save_mappings(keys, mode, global) abort
+    let mappings = {}
+
+    " If a key is used in a global mapping and a local one, by default,
+    " `maparg()` only returns information about the local one.
+    " We want to be able to get info about a global mapping even if a local
+    " one shadows it.
+    " To do that, we will temporarily unmap the local mapping.
+
+    if a:global
+        for l:key in a:keys
+            let buf_local_map = maparg(l:key, a:mode, 0, 1)
+
+            " temporarily unmap the local mapping
+            sil! exe a:mode.'unmap <buffer> '.l:key
+
+            " save info about the global one
+            let mappings[l:key] = maparg(l:key, a:mode, 0, 1)
+
+            " restore the local one
+            call s:restore_mappings({l:key : buf_local_map})
+        endfor
+
+    " TRY to return info local mappings.
+    " If they exist it will work, otherwise it will return info about global
+    " mappings.
+    else
+        for l:key in a:keys
+            let mappings[l:key] = maparg(l:key, a:mode, 0, 1)
+        endfor
+    endif
+
+    return mappings
+endfu
+
 
 "}}}
 " set_char_at "{{{
