@@ -207,19 +207,13 @@ endfu
 " ellipse "{{{
 
 fu! s:ellipse() abort
-    let x0    = virtcol("'<")
-    let y0    = line("'<")
-    let x1    = virtcol("'>")
-    let y1    = line("'>")
+    let [x0, x1] = [virtcol("'<"), virtcol("'>")]
+    let [y0, y1] = [line("'<"),    line("'>")]
 
     let xoff  = (x0+x1)/2
     let yoff  = (y0+y1)/2
     let a     = abs(x1-x0)/2
     let b     = abs(y1-y0)/2
-    let a2    = a*a
-    let b2    = b*b
-    let twoa2 = a2 + a2
-    let twob2 = b2 + b2
 
     let xi = 0
     let yi = b
@@ -227,8 +221,8 @@ fu! s:ellipse() abort
     call s:four(xi,yi,xoff,yoff,a,b)
     while xi <= a && yi >= 0
 
-        let dy = a2 - twoa2*yi
-        let ca = ei + twob2*xi + b2
+        let dy = a*a - 2*a*a*yi
+        let ca = ei + 2*b*b*xi + b*b
         let cb = ca + dy
         let cc = ei + dy
 
@@ -238,15 +232,15 @@ fu! s:ellipse() abort
 
         " pick case: (xi+1,yi) (xi,yi-1) (xi+1,yi-1)
         if aca <= acb && aca <= acc
-            let xi = xi + 1
-            let ei = ca
+            let xi += 1
+            let ei  = ca
         elseif acb <= aca && acb <= acc
-            let ei = cb
-            let xi = xi + 1
-            let yi = yi - 1
+            let ei  = cb
+            let xi += 1
+            let yi -= 1
         else
-            let ei = cc
-            let yi = yi - 1
+            let ei  = cc
+            let yi -= 1
         endif
         if xi > x1
             break
