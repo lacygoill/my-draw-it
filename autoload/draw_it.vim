@@ -102,21 +102,6 @@ endfu
 " arrow "{{{
 
 fu! s:arrow() abort
-    " let x0 = virtcol("'<")
-    " let y0 = line("'<")
-    " let x1 = virtcol("'>")
-    " let y1 = line("'>")
-
-    " exe 'norm! '.y0.'G'.x0.'|v'.x1.'|r-'
-    " exe 'norm! '.y1.'G'.x0.'|v'.x1.'|r-'
-
-    " exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr|'
-    " exe 'norm! '.y1.'G'.x1."|\<C-v>".y0.'Gr|'
-
-    " call s:set_char_at('+', x0, y0)
-    " call s:set_char_at('+', x0, y1)
-    " call s:set_char_at('+', x1, y0)
-    " call s:set_char_at('+', x1, y1)
 endfu
 
 "}}}
