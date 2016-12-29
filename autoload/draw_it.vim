@@ -1,9 +1,6 @@
 " TODO:
 "
 " - Implement toggling of arrows
-"
-" - Add small help documentation which summarize what are the default keys to
-"   draw. When drawing, install a mapping which shows us this help (`m?`).
 
 " data "{{{
 
