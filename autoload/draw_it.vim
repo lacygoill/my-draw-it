@@ -4,8 +4,6 @@
 "
 " - Add small help documentation which summarize what are the default keys to
 "   draw. When drawing, install a mapping which shows us this help (`m?`).
-"
-" - Implement unbounded vertical motion in visual mode
 
 " data "{{{
 
@@ -193,6 +191,7 @@ fu! draw_it#change_state(erasing_mode) abort
         let s:sol_save = &sol
 
         let s:original_mappings_normal = s:mappings_save([
+                                       \                   'm?',
                                        \                   '<Left>',
                                        \                   '<Right>',
                                        \                   '<Down>',
@@ -220,9 +219,9 @@ fu! draw_it#change_state(erasing_mode) abort
         let s:original_mappings_visual = s:mappings_save([
                                        \                   'j',
                                        \                   'k',
-                                       \                   'mda',
-                                       \                   'mdb',
-                                       \                   'mde'
+                                       \                   'ma',
+                                       \                   'mb',
+                                       \                   'me'
                                        \                 ],
                                        \                    'x',
                                        \                         1)
@@ -415,9 +414,11 @@ fu! s:mappings_install() abort
         exe 'xno '.args.' '.l:key.' :<C-U>call <SID>unbounded_vertical_motion('.string(l:key).', 1)<CR>'
     endfor
 
-    xno <silent> mda    :<C-U>call <SID>arrow()<CR>
-    xno <silent> mdb    :<C-U>call <SID>box()<CR>
-    xno <silent> mde    :<C-U>call <SID>ellipse()<CR>
+    xno <nowait> <silent> ma    :<C-U>call <SID>arrow()<CR>
+    xno <nowait> <silent> mb    :<C-U>call <SID>box()<CR>
+    xno <nowait> <silent> me    :<C-U>call <SID>ellipse()<CR>
+
+    nno <nowait> <silent> m?    :<C-U>h my-draw-it<CR>
 endfu
 
 "}}}
@@ -600,7 +601,7 @@ fu! s:mappings_toggle() abort
         set ve=all
 
         " We disable `'startofline'`, otherwise we get unintended results when
-        " trying to draw a box, hitting `mdb` from visual mode.
+        " trying to draw a box, hitting `mb` from visual mode.
         set nostartofline
 
         " We remove the `h` value from `'whichwrap'`, otherwise we get
@@ -689,10 +690,10 @@ endfu
 " unbounded_vertical_motion "{{{
 
 fu! s:unbounded_vertical_motion(motion, ...) abort
-    if a:motion ==# 'j' && (a:0 ? line("'<") : line('.')) == line('$')
-        call append('.', repeat(' ', a:0 ? virtcol("'<") : virtcol('.')))
+    if a:motion ==# 'j' && (a:0 ? line("'>") : line('.')) == line('$')
+        call append('.', repeat(' ', a:0 ? virtcol("'>") : virtcol('.')))
 
-    elseif a:motion ==# 'k' && (a:0 ? line("'>") : line('.')) == 1
+    elseif a:motion ==# 'k' && (a:0 ? line("'<") : line('.')) == 1
         call append(0, repeat(' ', a:0 ? virtcol("'<") : virtcol('.')))
     endif
 

@@ -1,0 +1,76 @@
+*my-draw-it* Draw ascii diagrams
+
+MY DRAW IT - TABLE OF CONTENTS                                      *my-draw-it-toc*
+
+    Mappings                                                   |my-draw-it-1|
+
+
+MAPPINGS                                                     *my-draw-it-mappings*
+                                                                    *my-draw-it-1*
+==============================================================================
+
+ These are global mappings:
+
+ -----------+----------------------------------------------------
+ Normal     |~
+ mappings   | Description~
+ -----------+----------------------------------------------------
+            |
+ m?         | Show this help
+            |
+ m_         | Enable/Toggle drawing mode
+            |
+ m<space>   | Enable/Toggle erasing mode
+            |
+ m|         | Stop everything
+            |
+ <S-Left>   | Move cursor left
+            |
+ <S-Right>  | Move cursor right
+            |
+ <S-Down>   | Move cursor down
+            |
+ <S-Up>     | Move cursor up
+            |
+ <Left>     | Draw a `-` and move left
+            |
+ <Right>    | Draw a `-` and move right
+            |
+ <Down>     | Draw a `|` and move down
+            |
+ <Up>       | Draw a `|` and move up
+            |
+ <PageDown> | Draw a `\` and move right then down
+            |
+ <PageUp>   | Draw a `/` and move right then up
+            |
+ <End>      | Draw a `/` and move left then down
+            |
+ <Home>     | Draw a `\` and move left then up
+            |
+ <          | Draw a `<` and move left
+            |
+ `>`          | Draw a `>` and move right
+            |
+ v          | Draw a `v` and move down
+            |
+ ^          | Draw a `^` and move up
+            |
+ H          | 3h (faster left motion)
+            |
+ L          | 3l (faster right motion)
+            |
+ -----------+-------------------------------------------------
+
+ -----------+----------------------------------------------------
+ Visual     |~
+ mappings   | Description~
+ -----------+----------------------------------------------------
+            |
+ ma         | Draw an arrow inside the visual block selection
+            |
+ mb         | Draw a box inside the visual block selection
+            |
+ me         | Draw an ellipse inside the visual block selection
+            |
+ -----------+-------------------------------------------------
