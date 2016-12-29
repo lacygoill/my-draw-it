@@ -447,7 +447,8 @@ endfu
 " It could cause unexpected behavior on the user's system.
 "
 " Usage:
-" call s:restore_mappings(my_saved_mappings)
+"
+"     call s:restore_mappings(my_saved_mappings)
 "
 " `my_saved_mappings` is a dictionary obtained earlier by calling
 " `s:save_mappings()`.
@@ -460,9 +461,9 @@ endfu
 fu! s:restore_mappings(mappings) abort
 
     for mapping in values(a:mappings)
-        if !empty(mapping)
+        if !has_key(mapping, 'unmapped') && !empty(mapping)
             exe     mapping.mode
-               \ . (mapping.noremap ? 'noremap ' : 'map ')
+               \ . (mapping.noremap ? 'noremap   ' : 'map ')
                \ . (mapping.buffer  ? ' <buffer> ' : '')
                \ . (mapping.expr    ? ' <expr>   ' : '')
                \ . (mapping.nowait  ? ' <nowait> ' : '')
@@ -470,6 +471,11 @@ fu! s:restore_mappings(mappings) abort
                \ .  mapping.lhs
                \ . ' '
                \ . substitute(mapping.rhs, '<SID>', '<SNR>'.mapping.sid.'_', 'g')
+
+        elseif has_key(mapping, 'unmapped')
+            sil! exe mapping.mode.'unmap '
+                                \ .(mapping.buffer ? ' <buffer> ' : '')
+                                \ . mapping.lhs
         endif
     endfor
 
@@ -561,7 +567,45 @@ fu! s:save_mappings(keys, mode, global) abort
             sil! exe a:mode.'unmap <buffer> '.l:key
 
             " save info about the global one
-            let mappings[l:key] = maparg(l:key, a:mode, 0, 1)
+            let map_info        = maparg(l:key, a:mode, 0, 1)
+            let mappings[l:key] = !empty(map_info)
+                                \     ? map_info
+                                \     : {
+                                        \ 'unmapped' : 1,
+                                        \ 'buffer'   : 0,
+                                        \ 'lhs'      : l:key,
+                                        \ 'mode'     : a:mode,
+                                        \ }
+
+            " If there's no mapping, why do we still save this dictionary: "{{{
+
+            "     {
+            "     \ 'unmapped' : 1,
+            "     \ 'buffer'   : 0,
+            "     \ 'lhs'      : l:key,
+            "     \ 'mode'     : a:mode,
+            "     \ }
+
+            " …?
+            " Suppose we have a key which is mapped to nothing.
+            " We save it (with an empty dictionary).
+            " It's possible that after the saving, the key is mapped to something.
+            " Restoring this key means deleting whatever mapping may now exist.
+            " But to be able to unmap the key, we need 3 information:
+            "
+            "     - is the mapping global or buffer-local (<buffer> argument)?
+            "     - the lhs
+            "     - the mode (normal, visual, …)
+            "
+            " The `'unmapped'` key is not necessary. I just find it can make
+            " the code a little more readable inside `s:restore_mappings()`.
+            " Indeed, one can write:
+
+            "     if has_key(mapping, 'unmapped') && !empty(mapping)
+            "         …
+            "     endif
+            "
+"}}}
 
             " restore the local one
             call s:restore_mappings({l:key : buf_local_map})
@@ -572,7 +616,15 @@ fu! s:save_mappings(keys, mode, global) abort
     " mappings.
     else
         for l:key in a:keys
-            let mappings[l:key] = maparg(l:key, a:mode, 0, 1)
+            let map_info        = maparg(l:key, a:mode, 0, 1)
+            let mappings[l:key] = !empty(map_info)
+                                \     ? map_info
+                                \     : {
+                                        \ 'unmapped' : 1,
+                                        \ 'buffer'   : 1,
+                                        \ 'lhs'      : l:key,
+                                        \ 'mode'     : a:mode,
+                                        \ }
         endfor
     endif
 
