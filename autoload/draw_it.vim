@@ -115,18 +115,20 @@ fu! s:arrow() abort
     if y0 ==# y1
     " horizontal arrow
         exe 'norm! '.y0.'G'.x0.'|v'.x1.'|r_'
+        exe 'norm! '.x1.'|r>'
 
     elseif x0 ==# x1
     " vertical arrow
         exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr|'
+        exe 'norm! '.y1.'Grv'
 
     else
         " diagonal arrow
         "
         " l2r = left to right
-        let l2r = virtcol("'<") < virtcol("'>") ? 1 : 0
-        let h   = y1 - y0
-        for i in range(0, h)
+        let l2r    = virtcol("'<") < virtcol("'>") ? 1 : 0
+        let height = y1 - y0
+        for i in range(0, height)
             if l2r
             " \
             "  \
@@ -140,12 +142,15 @@ fu! s:arrow() abort
             endif
         endfor
         norm! ro
+
+        exe 'norm! '.(l2r ? 'l' : 'h')."\<C-v>".x1.'|r_'
+
         " If we hit `O` in visual block mode, the positions of the marks '<, '>
         " are updated:
         "
         "     '<    upper-left    →    upper-right corner
         "     '>    lower-right   →    lower-left  "
-        exe 'norm! '.(l2r ? 'l' : 'h')."\<C-v>".x1.'|r_'
+        exe 'norm! '.x1.'|r'.(l2r ? '>' : '<')
     endif
 
     call s:restore_selection(x0, y0, x1, y1)
@@ -210,8 +215,6 @@ fu! draw_it#change_state(erasing_mode) abort
 
         let s:original_mappings = extend(s:original_mappings, s:save_mappings([
                                 \                                               'H',
-                                \                                               'J',
-                                \                                               'K',
                                 \                                               'L',
                                 \                                               'j',
                                 \                                               'k'],
@@ -362,11 +365,9 @@ fu! s:install_mappings() abort
 
     for l:key in [
                  \ 'H',
-                 \ 'J',
-                 \ 'K',
                  \ 'L',
                  \ ]
-        exe 'nno '.args.' '.l:key.' 5'.tolower(l:key)
+        exe 'nno '.args.' '.l:key.' 3'.tolower(l:key)
     endfor
 
     for l:key in [
@@ -538,7 +539,7 @@ endfu
 fu! s:restore_selection(x0, y0, x1, y1) abort
     call setpos("'>", [0, a:y0, a:x0, 0])
     call setpos("'<", [0, a:y1, a:x1, 0])
-    exe "norm! gv"
+    norm! gv
 endfu
 
 "}}}
@@ -718,9 +719,9 @@ endfu
 
 fu! s:unbounded_vertical_motion(motion) abort
     if a:motion ==# 'j' && line('.') == line('$')
-        call append('.', '')
+        call append('.', repeat(' ', virtcol('.')))
     elseif a:motion ==# 'k' && line('.') == 1
-        call append(0, '')
+        call append(0, repeat(' ', virtcol('.')))
     endif
 
     call feedkeys(a:motion, 'in')
