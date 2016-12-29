@@ -263,6 +263,38 @@ fu! draw_it#change_state(erasing_mode) abort
 endfu
 
 "}}}
+" draw_it "{{{
+
+fu! s:draw_it(key) abort
+
+    if s:beyond_last_line(a:key)
+        call append('.', '')
+    elseif s:above_first_line(a:key)
+        call append(0, '')
+    endif
+
+    if count([
+             \ '<Left>',
+             \ '<Right>',
+             \ '<Down>',
+             \ '<Up>',
+             \ '<PageDown>',
+             \ '<PageUp>',
+             \ '<End>',
+             \ '<Home>'
+             \ ],
+             \     a:key)
+
+        call s:replace_char(a:key)
+        exe 'norm! '.s:key2motion[a:key]
+        call s:replace_char(a:key)
+
+    elseif count(['^', 'v', '<', '>'], a:key)
+        exe 'norm! r'.s:key2char[a:key].s:key2motion[a:key].'r'.s:key2char[a:key]
+    endif
+endfu
+
+"}}}
 " ellipse "{{{
 
 fu! s:ellipse() abort
@@ -320,38 +352,6 @@ fu! s:four(x, y, xoff, yoff, a, b) abort
     call s:set_char_at('*', lx, y)
     call s:set_char_at('*', lx, by)
     call s:set_char_at('*',  x, by)
-endfu
-
-"}}}
-" it "{{{
-
-fu! s:draw_it(key) abort
-
-    if s:beyond_last_line(a:key)
-        call append('.', '')
-    elseif s:above_first_line(a:key)
-        call append(0, '')
-    endif
-
-    if count([
-             \ '<Left>',
-             \ '<Right>',
-             \ '<Down>',
-             \ '<Up>',
-             \ '<PageDown>',
-             \ '<PageUp>',
-             \ '<End>',
-             \ '<Home>'
-             \ ],
-             \     a:key)
-
-        call s:replace_char(a:key)
-        exe 'norm! '.s:key2motion[a:key]
-        call s:replace_char(a:key)
-
-    elseif count(['^', 'v', '<', '>'], a:key)
-        exe 'norm! r'.s:key2char[a:key].s:key2motion[a:key].'r'.s:key2char[a:key]
-    endif
 endfu
 
 "}}}
