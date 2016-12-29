@@ -2,13 +2,6 @@
 "
 " - Implement tip of arrow
 "
-" - When drawing is enabled, add mappings on the `j` and `k` keys (in normal
-"   mode), so that they open a new line below/above when reaching the
-"   end/beginning of the buffer.
-"
-" - We will end up with many keys executing the same piece of code to open new
-"   lines. Refactor to avoid the repetition?
-"
 " - Add small help documentation which summarize what are the default keys to
 "   draw. When drawing, install a mapping which shows us this help (`m?`).
 
@@ -209,7 +202,16 @@ fu! draw_it#change_state(erasing_mode) abort
                                 \                                      1)
                                 \       )
 
-        let s:original_mappings = extend(s:original_mappings, s:save_mappings(['H', 'J', 'K', 'L'], 'n', 1))
+        let s:original_mappings = extend(s:original_mappings, s:save_mappings([
+                                \                                               'H',
+                                \                                               'J',
+                                \                                               'K',
+                                \                                               'L',
+                                \                                               'j',
+                                \                                               'k'],
+                                \                                                     'n',
+                                \                                                          1)
+                                \       )
 
         " The last argument passed to `s:save_mappings()` is 1. "{{{
         " This is very important. It means that we save global mappings.
@@ -328,7 +330,12 @@ fu! s:install_mappings() abort
                           \.' :<C-U>call <SID>draw_it('.string('<lt>'.l:key[1:]).')<CR>'
     endfor
 
-    for l:key in ['<', '>', 'v', '^']
+    for l:key in [
+                 \ '<',
+                 \ '>',
+                 \ 'v',
+                 \ '^',
+                 \ ]
         exe 'nno '.args.' '.l:key
                     \.' :<C-U>call <SID>draw_it('.string(l:key).')<CR>'
     endfor
@@ -340,13 +347,25 @@ fu! s:install_mappings() abort
                  \ '<S-Up>',
                  \ ]
         exe 'nno '.args.' '.l:key
-                         \ .' :<C-U>call <SID>shift_arrow('
+                         \ .' :<C-U>call <SID>unbounded_vertical_motion('
                          \ .string(s:key2motion[l:key])
                          \ .')<CR>'
     endfor
 
-    for l:key in ['H', 'J', 'K', 'L']
+    for l:key in [
+                 \ 'H',
+                 \ 'J',
+                 \ 'K',
+                 \ 'L',
+                 \ ]
         exe 'nno '.args.' '.l:key.' 5'.tolower(l:key)
+    endfor
+
+    for l:key in [
+                 \ 'j',
+                 \ 'k',
+                 \ ]
+        exe 'nno '.args.' '.l:key.' :<C-U>call <SID>unbounded_vertical_motion('.string(l:key).')<CR>'
     endfor
 
     xno <silent> mda    :<C-U>call <SID>arrow()<CR>
@@ -643,19 +662,6 @@ fu! s:set_char_at(char, x, y) abort
 endfu
 
 "}}}
-" shift_arrow "{{{
-
-fu! s:shift_arrow(motion) abort
-    if a:motion ==# 'j' && line('.') == line('$')
-        call append('.', '')
-    elseif a:motion ==# 'k' && line('.') == 1
-        call append(0, '')
-    endif
-
-    call feedkeys(a:motion, 'in')
-endfu
-
-"}}}
 " stop "{{{
 
 fu! draw_it#stop() abort
@@ -688,6 +694,19 @@ fu! s:toggle_mappings() abort
 
         echom '['.substitute(s:state, '.', '\u&', '').'] '.'enabled'
     endif
+endfu
+
+"}}}
+" unbounded_vertical_motion "{{{
+
+fu! s:unbounded_vertical_motion(motion) abort
+    if a:motion ==# 'j' && line('.') == line('$')
+        call append('.', '')
+    elseif a:motion ==# 'k' && line('.') == 1
+        call append(0, '')
+    endif
+
+    call feedkeys(a:motion, 'in')
 endfu
 
 "}}}
