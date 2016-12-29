@@ -1,9 +1,11 @@
 " TODO:
 "
-" - Implement tip of arrow
+" - Implement toggling of arrows
 "
 " - Add small help documentation which summarize what are the default keys to
 "   draw. When drawing, install a mapping which shows us this help (`m?`).
+"
+" - Implement unbounded vertical motion in visual mode
 
 " data "{{{
 
@@ -13,8 +15,8 @@
 " Because if we edit the code, while the drawing mappings are installed, and
 " source it, then the next time we will toggle the state of the plugin with
 " `m_`, `m<space>`, `draw_it#change_state()` will save the drawing mappings in
-" `s:original_mappings`. From then, we won't be able to remove the
-" mappings with `m|`, because the plugin will consider them as default.
+" `s:original_mappings_{normal|visual}`. From then, we won't be able to remove
+" the mappings with `m|`, because the plugin will consider them as default.
 "
 " This issue is not limited to this particular case.
 " It's a fundamental issue.
@@ -189,40 +191,43 @@ fu! draw_it#change_state(erasing_mode) abort
         let s:ve_save  = &ve
         let s:ww_save  = &ww
         let s:sol_save = &sol
-        let s:original_mappings = extend(s:save_mappings(['mda', 'mdb', 'mde'], 'x', 1),
-                                \        s:save_mappings([
-                                \                               '<Left>',
-                                \                               '<Right>',
-                                \                               '<Down>',
-                                \                               '<Up>',
-                                \                               '<S-Left>',
-                                \                               '<S-Right>',
-                                \                               '<S-Down>',
-                                \                               '<S-Up>',
-                                \                               '<PageDown>',
-                                \                               '<PageUp>',
-                                \                               '<End>',
-                                \                               '<Home>',
-                                \                               '<',
-                                \                               '>',
-                                \                               'v',
-                                \                               '^',
-                                \                              ],
-                                \
-                                \                                 'n',
-                                \                                      1)
-                                \       )
 
-        let s:original_mappings = extend(s:original_mappings, s:save_mappings([
-                                \                                               'H',
-                                \                                               'L',
-                                \                                               'j',
-                                \                                               'k'],
-                                \                                                     'n',
-                                \                                                          1)
-                                \       )
+        let s:original_mappings_normal = s:mappings_save([
+                                       \                   '<Left>',
+                                       \                   '<Right>',
+                                       \                   '<Down>',
+                                       \                   '<Up>',
+                                       \                   '<S-Left>',
+                                       \                   '<S-Right>',
+                                       \                   '<S-Down>',
+                                       \                   '<S-Up>',
+                                       \                   '<PageDown>',
+                                       \                   '<PageUp>',
+                                       \                   '<End>',
+                                       \                   '<Home>',
+                                       \                   '<',
+                                       \                   '>',
+                                       \                   'v',
+                                       \                   '^',
+                                       \                   'H',
+                                       \                   'L',
+                                       \                   'j',
+                                       \                   'k',
+                                       \                  ],
+                                       \                     'n',
+                                       \                          1)
 
-        " The last argument passed to `s:save_mappings()` is 1. "{{{
+        let s:original_mappings_visual = s:mappings_save([
+                                       \                   'j',
+                                       \                   'k',
+                                       \                   'mda',
+                                       \                   'mdb',
+                                       \                   'mde'
+                                       \                 ],
+                                       \                    'x',
+                                       \                         1)
+
+        " The last argument passed to `s:mappings_save()` is 1. "{{{
         " This is very important. It means that we save global mappings.
         " We aren't interested in buffer-local ones.
         " Why?
@@ -258,7 +263,7 @@ fu! draw_it#change_state(erasing_mode) abort
                        \ 'erasing'  : a:erasing_mode ? 'disabled' : 'drawing' ,
                        \ }[s:state]
 
-    call s:toggle_mappings()
+    call s:mappings_toggle()
 endfu
 
 "}}}
@@ -322,9 +327,41 @@ fu! s:four(x, y, xoff, yoff, a, b) abort
 endfu
 
 "}}}
-" install_mappings "{{{
+" it "{{{
 
-fu! s:install_mappings() abort
+fu! s:draw_it(key) abort
+
+    if s:beyond_last_line(a:key)
+        call append('.', '')
+    elseif s:above_first_line(a:key)
+        call append(0, '')
+    endif
+
+    if count([
+             \ '<Left>',
+             \ '<Right>',
+             \ '<Down>',
+             \ '<Up>',
+             \ '<PageDown>',
+             \ '<PageUp>',
+             \ '<End>',
+             \ '<Home>'
+             \ ],
+             \     a:key)
+
+        call s:replace_char(a:key)
+        exe 'norm! '.s:key2motion[a:key]
+        call s:replace_char(a:key)
+
+    elseif count(['^', 'v', '<', '>'], a:key)
+        exe 'norm! r'.s:key2char[a:key].s:key2motion[a:key].'r'.s:key2char[a:key]
+    endif
+endfu
+
+"}}}
+" mappings_install "{{{
+
+fu! s:mappings_install() abort
     let args = ' <nowait> <silent> '
 
     for l:key in [
@@ -375,6 +412,7 @@ fu! s:install_mappings() abort
                  \ 'k',
                  \ ]
         exe 'nno '.args.' '.l:key.' :<C-U>call <SID>unbounded_vertical_motion('.string(l:key).')<CR>'
+        exe 'xno '.args.' '.l:key.' :<C-U>call <SID>unbounded_vertical_motion('.string(l:key).', 1)<CR>'
     endfor
 
     xno <silent> mda    :<C-U>call <SID>arrow()<CR>
@@ -383,86 +421,12 @@ fu! s:install_mappings() abort
 endfu
 
 "}}}
-" it "{{{
-
-fu! s:draw_it(key) abort
-
-    if s:beyond_last_line(a:key)
-        call append('.', '')
-    elseif s:above_first_line(a:key)
-        call append(0, '')
-    endif
-
-    if count([
-             \ '<Left>',
-             \ '<Right>',
-             \ '<Down>',
-             \ '<Up>',
-             \ '<PageDown>',
-             \ '<PageUp>',
-             \ '<End>',
-             \ '<Home>'
-             \ ],
-             \     a:key)
-
-        call s:replace_char(a:key)
-        exe 'norm! '.s:key2motion[a:key]
-        call s:replace_char(a:key)
-
-    elseif count(['^', 'v', '<', '>'], a:key)
-        exe 'norm! r'.s:key2char[a:key].s:key2motion[a:key].'r'.s:key2char[a:key]
-    endif
-endfu
-
-"}}}
-" remove_mappings "{{{
-
-fu! s:remove_mappings() abort
-    if !exists('s:original_mappings')
-        return
-    endif
-
-    for l:key in [
-                 \ '<Left>',
-                 \ '<Right>',
-                 \ '<Down>',
-                 \ '<Up>',
-                 \ '<S-Left>',
-                 \ '<S-Right>',
-                 \ '<S-Down>',
-                 \ '<S-Up>',
-                 \ '<PageDown>',
-                 \ '<PageUp>',
-                 \ '^',
-                 \ 'v',
-                 \ '<',
-                 \ '>',
-                 \ ]
-
-        " Why unmap silently?
-        "
-        " Because we could be dumb and ask to disable the drawing mode manually
-        " (`m|`), even though it's already disabled.
-        " It could raise errors, if the keys are already unmapped (the user didn't
-        " map them to anything by default).
-
-        sil! exe 'nunmap '.l:key
-    endfor
-
-    for l:key in ['mda', 'mdb', 'mde']
-        sil! exe 'xunmap '.l:key
-    endfor
-
-    call s:restore_mappings(s:original_mappings)
-endfu
-
-"}}}
-" restore_mappings "{{{
+" mappings_restore "{{{
 
 " Warning:
 " Don't try to restore a buffer local mapping unless you're sure that, when
-" `s:restore_mappings()` is called, you're in the same buffer where
-" `s:save_mappings()` was originally called.
+" `s:mappings_restore()` is called, you're in the same buffer where
+" `s:mappings_save()` was originally called.
 "
 " If you aren't in the same buffer, you could install a buffer-local mapping
 " inside a buffer where this mapping didn't exist before.
@@ -470,17 +434,17 @@ endfu
 "
 " Usage:
 "
-"     call s:restore_mappings(my_saved_mappings)
+"     call s:mappings_restore(my_saved_mappings)
 "
 " `my_saved_mappings` is a dictionary obtained earlier by calling
-" `s:save_mappings()`.
+" `s:mappings_save()`.
 " Its keys are the keys used in the mappings.
 " Its values are the info about those mappings stored in sub-dictionaries.
 "
-" There's nothing special to pass to `s:restore_mappings()`, no other
+" There's nothing special to pass to `s:mappings_restore()`, no other
 " argument, no wrapping inside a 3rd dictionary, or anything. Just this dictionary.
 
-fu! s:restore_mappings(mappings) abort
+fu! s:mappings_restore(mappings) abort
 
     for mapping in values(a:mappings)
         if !has_key(mapping, 'unmapped') && !empty(mapping)
@@ -504,51 +468,12 @@ fu! s:restore_mappings(mappings) abort
 endfu
 
 "}}}
-" replace_char"{{{
-
-fu! s:replace_char(key) abort
-
-    " This function is called before and then after a motion (left, up, …).
-    " It must return the character to draw.
-    "
-    " When it's called AFTER a motion, and we're erasing, the character HAS TO
-    " be a space.
-    " When it's called BEFORE a motion, and we're erasing, we COULD (should?)
-    " return nothing.
-    "
-    " Nevertheless, we let the function return a space.
-    " It doesn't seem to cause an issue.
-    " This way, we don't have to pass a 2nd argument to know when it's called
-    " (before or after a motion).
-
-    let cchar = getline('.')[col('.')-1]
-
-    exe 'norm! r'
-               \ .(
-               \   s:state ==# 'erasing'
-               \   ? ' '
-               \   : cchar =~# s:crossing_keys[a:key] && cchar !=# s:key2char[a:key]
-               \         ? s:intersection[a:key]
-               \         : s:key2char[a:key]
-               \  )
-endfu
-
-"}}}
-" restore_selection "{{{
-
-fu! s:restore_selection(x0, y0, x1, y1) abort
-    call setpos("'>", [0, a:y0, a:x0, 0])
-    call setpos("'<", [0, a:y1, a:x1, 0])
-    norm! gv
-endfu
-
-"}}}
-" save_mappings "{{{
+" mappings_save "{{{
 
 " Usage:
 "
-"     let my_global_mappings = s:save_mappings(['key1', 'key2', …], 'n', 1)
-"     let my_local_mappings  = s:save_mappings(['key1', 'key2', …], 'n', 0)
+"     let my_global_mappings = s:mappings_save(['key1', 'key2', …], 'n', 1)
+"     let my_local_mappings  = s:mappings_save(['key1', 'key2', …], 'n', 0)
 "
 
 " Output example: "{{{
@@ -581,7 +506,7 @@ endfu
 "
 " }}}
 
-fu! s:save_mappings(keys, mode, global) abort
+fu! s:mappings_save(keys, mode, global) abort
     let mappings = {}
 
     " If a key is used in a global mapping and a local one, by default,
@@ -629,7 +554,7 @@ fu! s:save_mappings(keys, mode, global) abort
             "     - the mode (normal, visual, …)
             "
             " The `'unmapped'` key is not necessary. I just find it can make
-            " the code a little more readable inside `s:restore_mappings()`.
+            " the code a little more readable inside `s:mappings_restore()`.
             " Indeed, one can write:
 
             "     if has_key(mapping, 'unmapped') && !empty(mapping)
@@ -639,7 +564,7 @@ fu! s:save_mappings(keys, mode, global) abort
 "}}}
 
             " restore the local one
-            call s:restore_mappings({l:key : buf_local_map})
+            call s:mappings_restore({l:key : buf_local_map})
         endfor
 
     " TRY to return info local mappings.
@@ -664,6 +589,68 @@ endfu
 
 
 "}}}
+" mappings_toggle "{{{
+
+fu! s:mappings_toggle() abort
+    if s:state ==# 'disabled'
+        call draw_it#stop()
+
+    else
+        call s:mappings_install()
+        set ve=all
+
+        " We disable `'startofline'`, otherwise we get unintended results when
+        " trying to draw a box, hitting `mdb` from visual mode.
+        set nostartofline
+
+        " We remove the `h` value from `'whichwrap'`, otherwise we get
+        " unintended results when drawing and reaching column 0.
+        set whichwrap-=h
+
+        echom '['.substitute(s:state, '.', '\u&', '').'] '.'enabled'
+    endif
+endfu
+
+"}}}
+" replace_char"{{{
+
+fu! s:replace_char(key) abort
+
+    " This function is called before and then after a motion (left, up, …).
+    " It must return the character to draw.
+    "
+    " When it's called AFTER a motion, and we're erasing, the character HAS TO
+    " be a space.
+    " When it's called BEFORE a motion, and we're erasing, we COULD (should?)
+    " return nothing.
+    "
+    " Nevertheless, we let the function return a space.
+    " It doesn't seem to cause an issue.
+    " This way, we don't have to pass a 2nd argument to know when it's called
+    " (before or after a motion).
+
+    let cchar = getline('.')[col('.')-1]
+
+    exe 'norm! r'
+               \ .(
+               \   s:state ==# 'erasing'
+               \   ? ' '
+               \   : cchar =~# s:crossing_keys[a:key] && cchar !=# s:key2char[a:key]
+               \         ? s:intersection[a:key]
+               \         : s:key2char[a:key]
+               \  )
+endfu
+
+"}}}
+" restore_selection "{{{
+
+fu! s:restore_selection(x0, y0, x1, y1) abort
+    call setpos("'>", [0, a:y0, a:x0, 0])
+    call setpos("'<", [0, a:y1, a:x1, 0])
+    norm! gv
+endfu
+
+"}}}
 " set_char_at "{{{
 
 fu! s:set_char_at(char, x, y) abort
@@ -684,7 +671,14 @@ endfu
 
 fu! draw_it#stop() abort
     let s:state = 'disabled'
-    call s:remove_mappings()
+
+    if exists('s:original_mappings_normal')
+        call s:mappings_restore(s:original_mappings_normal)
+    endif
+    if exists('s:original_mappings_visual')
+        call s:mappings_restore(s:original_mappings_visual)
+    endif
+
     let &ve  = get(s:, 've_save', &ve)
     let &ww  = get(s:, 'ww_save', &ww)
     let &sol = get(s:, 'sol_save', &sol)
@@ -692,39 +686,21 @@ fu! draw_it#stop() abort
 endfu
 
 "}}}
-" toggle_mappings"{{{
-
-fu! s:toggle_mappings() abort
-    if s:state ==# 'disabled'
-        call draw_it#stop()
-
-    else
-        call s:install_mappings()
-        set ve=all
-
-        " We disable `'startofline'`, otherwise we get unintended results when
-        " trying to draw a box, hitting `mdb` from visual mode.
-        set nostartofline
-
-        " We remove the `h` value from `'whichwrap'`, otherwise we get
-        " unintended results when drawing and reaching column 0.
-        set whichwrap-=h
-
-        echom '['.substitute(s:state, '.', '\u&', '').'] '.'enabled'
-    endif
-endfu
-
-"}}}
 " unbounded_vertical_motion "{{{
 
-fu! s:unbounded_vertical_motion(motion) abort
-    if a:motion ==# 'j' && line('.') == line('$')
-        call append('.', repeat(' ', virtcol('.')))
-    elseif a:motion ==# 'k' && line('.') == 1
-        call append(0, repeat(' ', virtcol('.')))
+fu! s:unbounded_vertical_motion(motion, ...) abort
+    if a:motion ==# 'j' && (a:0 ? line("'<") : line('.')) == line('$')
+        call append('.', repeat(' ', a:0 ? virtcol("'<") : virtcol('.')))
+
+    elseif a:motion ==# 'k' && (a:0 ? line("'>") : line('.')) == 1
+        call append(0, repeat(' ', a:0 ? virtcol("'<") : virtcol('.')))
     endif
 
-    call feedkeys(a:motion, 'in')
+    if a:0
+        exe 'norm! gv'.a:motion
+    else
+        exe 'norm! '.a:motion
+    endif
 endfu
 
 "}}}
