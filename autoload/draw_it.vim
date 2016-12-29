@@ -115,9 +115,11 @@ fu! s:arrow() abort
     if y0 ==# y1
     " horizontal arrow
         exe 'norm! '.y0.'G'.x0.'|v'.x1.'|r_'
+
     elseif x0 ==# x1
     " vertical arrow
         exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr|'
+
     else
         " diagonal arrow
         "
@@ -143,8 +145,10 @@ fu! s:arrow() abort
         "
         "     '<    upper-left    →    upper-right corner
         "     '>    lower-right   →    lower-left  "
-        exe 'norm! '.(l2r ? 'l' : 'h').'v'.x1.'|r_'
+        exe 'norm! '.(l2r ? 'l' : 'h')."\<C-v>".x1.'|r_'
     endif
+
+    call s:restore_selection(x0, y0, x1, y1)
 endfu
 
 "}}}
@@ -167,6 +171,8 @@ fu! s:box() abort
     call s:set_char_at('+', x0, y1)
     call s:set_char_at('+', x1, y0)
     call s:set_char_at('+', x1, y1)
+
+    call s:restore_selection(x0, y0, x1, y1)
 endfu
 
 "}}}
@@ -296,6 +302,8 @@ fu! s:ellipse() abort
         endif
         call s:four(xi, yi, xoff, yoff, a, b)
     endwhile
+
+    call s:restore_selection(x0, y0, x1, y1)
 endfu
 
 fu! s:four(x, y, xoff, yoff, a, b) abort
@@ -522,6 +530,15 @@ fu! s:replace_char(key) abort
                \         ? s:intersection[a:key]
                \         : s:key2char[a:key]
                \  )
+endfu
+
+"}}}
+" restore_selection "{{{
+
+fu! s:restore_selection(x0, y0, x1, y1) abort
+    call setpos("'>", [0, a:y0, a:x0, 0])
+    call setpos("'<", [0, a:y1, a:x1, 0])
+    exe "norm! gv"
 endfu
 
 "}}}
