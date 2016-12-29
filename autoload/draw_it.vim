@@ -408,7 +408,6 @@ fu! s:mappings_install() abort
                  \ 'k',
                  \ ]
         exe 'nno '.args.' '.l:key.' :<C-U>call <SID>unbounded_vertical_motion('.string(l:key).')<CR>'
-        exe 'xno '.args.' '.l:key.' :<C-U>call <SID>unbounded_vertical_motion('.string(l:key).', 1)<CR>'
     endfor
 
     xno <nowait> <silent> ma    :<C-U>call <SID>arrow()<CR>
@@ -686,19 +685,15 @@ endfu
 "}}}
 " unbounded_vertical_motion "{{{
 
-fu! s:unbounded_vertical_motion(motion, ...) abort
-    if a:motion ==# 'j' && (a:0 ? line("'>") : line('.')) == line('$')
-        call append('.', repeat(' ', a:0 ? virtcol("'>") : virtcol('.')))
+fu! s:unbounded_vertical_motion(motion) abort
+    if a:motion ==# 'j' && line('.') == line('$')
+        call append('.', repeat(' ', virtcol('.')))
 
-    elseif a:motion ==# 'k' && (a:0 ? line("'<") : line('.')) == 1
-        call append(0, repeat(' ', a:0 ? virtcol("'<") : virtcol('.')))
+    elseif a:motion ==# 'k' && line('.') == 1
+        call append(0, repeat(' ', virtcol('.')))
     endif
 
-    if a:0
-        exe 'norm! gv'.a:motion
-    else
-        exe 'norm! '.a:motion
-    endif
+    exe 'norm! '.a:motion
 endfu
 
 "}}}
