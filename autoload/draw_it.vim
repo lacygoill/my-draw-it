@@ -2,12 +2,6 @@
 "
 " - Implement tip of arrow
 "
-" - Modify `s:restore_mappings()` so that it unmaps a key when the dictionary it
-"   received is empty.
-"   It will probably need a second argument, to know whether it must unmap
-"   a global or local mapping.
-"   Once done, reproduce the changes inside our own library (myfuncs#).
-"
 " - When drawing is enabled, add mappings on the `j` and `k` keys (in normal
 "   mode), so that they open a new line below/above when reaching the
 "   end/beginning of the buffer.
