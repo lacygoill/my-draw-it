@@ -1,6 +1,11 @@
 " TODO:
 "
 " - Implement toggling of arrows
+"
+" - When we read the help `m?`, the drawing mappings can cause errors.
+"   For example, if we try to move beyond the limit of the buffer with `j` and
+"   `k`.
+"   We should probably make the mappings buffer-local.
 
 " data "{{{
 
@@ -206,6 +211,8 @@ fu! draw_it#change_state(erasing_mode) abort
                                        \                   'v',
                                        \                   '^',
                                        \                   'H',
+                                       \                   'J',
+                                       \                   'K',
                                        \                   'L',
                                        \                   'j',
                                        \                   'k',
@@ -406,8 +413,10 @@ fu! s:mappings_install() abort
     for l:key in [
                  \ 'j',
                  \ 'k',
+                 \ 'J',
+                 \ 'K',
                  \ ]
-        exe 'nno '.args.' '.l:key.' :<C-U>call <SID>unbounded_vertical_motion('.string(l:key).')<CR>'
+        exe 'nno '.args.' '.l:key.' :<C-U>call <SID>unbounded_vertical_motion('.string(tolower(l:key)).')<CR>'
     endfor
 
     xno <nowait> <silent> ma    :<C-U>call <SID>arrow()<CR>
