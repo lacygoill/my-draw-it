@@ -1,5 +1,9 @@
 " TODO:
 "
+" - remove trailing whitespace in red
+"
+" - allow moving visual selection beyond first/last line
+"
 " - When we read the help `m?`, the drawing mappings can cause errors.
 "   For example, if we try to move beyond the limit of the buffer with `j` and
 "   `k`. We should probably make the mappings buffer-local.
