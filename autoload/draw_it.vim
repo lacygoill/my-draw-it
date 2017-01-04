@@ -1,5 +1,7 @@
 " TODO:
 "
+" - don't put the `o` character right before the tip of the arrow
+"
 " - remove trailing whitespace in red
 "
 " - allow moving visual selection beyond first/last line
