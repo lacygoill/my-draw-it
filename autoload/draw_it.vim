@@ -1,11 +1,13 @@
 " TODO:
 "
-" - Implement toggling of arrows
-"
 " - When we read the help `m?`, the drawing mappings can cause errors.
 "   For example, if we try to move beyond the limit of the buffer with `j` and
-"   `k`.
-"   We should probably make the mappings buffer-local.
+"   `k`. We should probably make the mappings buffer-local.
+"
+" - Besides, we should improve the save/restore functions, so that they
+"   restore buffer-local mappings inside the right buffer (and make sure it
+"   still exists before trying to restore them).
+"   Use `bufexists()` and `:{count}bufdo`.
 
 " data "{{{
 
@@ -110,52 +112,147 @@ endfu
 "}}}
 " arrow "{{{
 
-fu! s:arrow() abort
-    let [x0, x1] = [virtcol("'<"), virtcol("'>")]
-    let [y0, y1] = [line("'<"),    line("'>")]
+fu! s:arrow(...) abort
 
-    if y0 ==# y1
-    " horizontal arrow
-        exe 'norm! '.y0.'G'.x0.'|v'.x1.'|r_'
-        exe 'norm! '.x1.'|r>'
+    " We initialize the coordinates of the beginning and end of the arrow,
+    " as well as its tip.
+    if a:0
+    " We're cycling.
 
-    elseif x0 ==# x1
-    " vertical arrow
-        exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr|'
-        exe 'norm! '.y1.'Grv'
+        let [x0, y0, x1, y1, xb, yb] = a:1
+        let tip = a:2
+    else
+    " We're creating a first arrow.
+
+        " normalize in case we hit `O`???
+        " I don't think it would be a good idea to normalize.
+        " Why?
+        " normalization would prevent us from having the choice between
+        " 2 different arrows depending on whether we switched the visual marks
+        " hitting `O`.
+
+        let [x0, y0] = [virtcol("'<"), line("'<")]
+        let [x1, y1] = [virtcol("'>"), line("'>")]
+
+        " if the height is too big, the first segment of the arrow can't be
+        " oblique (it would go too far), it must be vertical
+        let [height, width] = [abs(y1 - y0), abs(x1 - x0)]
+        let xb              = height > width ? x0 : x0 + (x0 < x1 ? height : -height)
+        let yb              = y1
+
+        let tip = x0 < x1 ? '>' : '<'
+    endif
+
+    if x0 == x1 || y0 == y1
+    " vertical/horizontal arrow
+        call s:segment([x0, y0, x1, y1])
+        call s:set_char_at(x0 == x1 ? 'v' : '>', x1 , y1)
 
     else
         " diagonal arrow
-        "
-        " l2r = left to right
-        let l2r    = virtcol("'<") < virtcol("'>") ? 1 : 0
-        let height = y1 - y0
-        for i in range(0, height)
-            if l2r
-            " \
-            "  \
-            "   o---
-                call s:set_char_at('\', x0+i, y0+i)
-            else
-            "      /
-            "     /
-            " ---o
-                call s:set_char_at('/', x0-i, y0+i)
-            endif
-        endfor
-        norm! ro
 
-        exe 'norm! '.(l2r ? 'l' : 'h')."\<C-v>".x1.'|r_'
+        " draw 1st segment of the arrow
+        call s:segment([x0, y0, xb, yb])
 
-        " If we hit `O` in visual block mode, the positions of the marks '<, '>
-        " are updated:
-        "
-        "     '<    upper-left    →    upper-right corner
-        "     '>    lower-right   →    lower-left  "
-        exe 'norm! '.x1.'|r'.(l2r ? '>' : '<')
+        " draw 2nd segment of the arrow
+        call s:segment([xb, yb, x1, y1])
+
+        " draw an `o` character where the 2 segments of the arrow break at
+        call s:set_char_at('o', xb, yb)
+
+        " draw the tip of the arrow
+        " This line must be adapted so that `s:arrow()` can draw the tip of any
+        " arrow. It should be able to deduce it from the segments.
+        " If it can't, pass the tip as an argument when `s:arrow()` is called by
+        " `s:arrow_cycle()`.
+        call s:set_char_at(tip, x1, y1)
     endif
 
     call s:restore_selection(x0, y0, x1, y1)
+endfu
+
+"}}}
+" arrow_cycle "{{{
+
+fu! s:arrow_cycle(back) abort
+    " Why `min()`, `max()`?
+    "
+    " We could have hit `O` in visual mode, which would have switch the
+    " position of the marks.
+    "
+    "     '<    upper-left    →    upper-right corner
+    "     '>    lower-right   →    lower-left  "
+    "
+    " We need to normalize the x0, y0, x1, y1 coordinates.
+    " Indeed, we'll use them inside a dictionary (`s:state2coords`) to deduce
+    " the coordinates of 3 points necessary to erase the current arrow and draw the next one.
+    " The dictionary was written expecting (x0, y0) to be the coordinates of
+    " the upper-left corner, while (x1, y1) are the coordinates of the
+    " bottom-right corner.
+
+    let [x0, y0] = [min([virtcol("'<"), virtcol("'>")]), min([line("'<"), line("'>")])]
+    let [x1, y1] = [max([virtcol("'<"), virtcol("'>")]), max([line("'<"), line("'>")])]
+
+    " A B
+    " D C
+    let corners = {
+                  \ 'A' : matchstr(getline("'<"), '\v%'.x0.'v.'),
+                  \ 'B' : matchstr(getline("'<"), '\v%'.x1.'v.'),
+                  \ 'C' : matchstr(getline("'>"), '\v%'.x1.'v.'),
+                  \ 'D' : matchstr(getline("'>"), '\v%'.x0.'v.'),
+                  \ }
+
+    let cur_arrow = filter(corners, 'v:val =~ ''[<>v^]''')
+    if empty(cur_arrow)
+        return
+    endif
+
+    if y0 ==# y1
+    " horizontal arrow
+        exe 'norm! '.(values(cur_arrow)[0] ==# '<' ? x1.'|r>'.x0 : x0.'|r<'.x1).'|r_'
+        return
+
+    elseif x0 ==# x1
+    " vertical arrow
+        exe 'norm! '.(values(cur_arrow)[0] ==# 'v' ? y0.'Gr^'.y1 : y1.'Grv'.y0).'Gr|'
+        return
+
+    else
+    " diagonal arrow
+
+        " Ex: B>, Cv, A^, …
+        let cur_state = keys(cur_arrow)[0].values(cur_arrow)[0]
+        let states    = ['A<', 'A^', 'B^', 'B>', 'C>', 'Cv', 'Dv', 'D<']
+        let new_state = states[(index(states, cur_state) + (a:back ? -1 : 1)) % len(states)]
+        let tip       = new_state[1]
+
+        let [height, width] = [abs(y1 - y0), x1 - x0]
+        let offset          = height > width ? 0 : height
+
+        let state2coords = {
+                           \ 'A<' : { 'beg' : [x1, y1], 'end' : [x0, y0], 'break' : [x1 - offset, y0]},
+                           \ 'A^' : { 'beg' : [x1, y1], 'end' : [x0, y0], 'break' : [x0 + offset, y1]},
+                           \ 'B^' : { 'beg' : [x0, y1], 'end' : [x1, y0], 'break' : [x1 - offset, y1]},
+                           \ 'B>' : { 'beg' : [x0, y1], 'end' : [x1, y0], 'break' : [x0 + offset, y0]},
+                           \ 'C>' : { 'beg' : [x0, y0], 'end' : [x1, y1], 'break' : [x0 + offset, y1]},
+                           \ 'Cv' : { 'beg' : [x0, y0], 'end' : [x1, y1], 'break' : [x1 - offset, y0]},
+                           \ 'Dv' : { 'beg' : [x1, y0], 'end' : [x0, y1], 'break' : [x0 + offset, y0]},
+                           \ 'D<' : { 'beg' : [x1, y0], 'end' : [x0, y1], 'break' : [x1 - offset, y1]},
+                           \ }
+
+        " we erase the current arrow
+        let point1 = state2coords[cur_state]['beg']
+        let point2 = state2coords[cur_state]['end']
+        let point3 = state2coords[cur_state]['break']
+        call s:segment(extend(copy(point1), point3), 1)
+        call s:segment(extend(copy(point3), point2), 1)
+
+        " we draw a new one
+        let point1 = state2coords[new_state]['beg']
+        let point2 = state2coords[new_state]['end']
+        let point3 = state2coords[new_state]['break']
+        call s:arrow(extend(extend(copy(point1), point2), point3), tip)
+    endif
 endfu
 
 "}}}
@@ -225,7 +322,9 @@ fu! draw_it#change_state(erasing_mode) abort
                                        \                   'k',
                                        \                   'ma',
                                        \                   'mb',
-                                       \                   'me'
+                                       \                   'me',
+                                       \                   'mm',
+                                       \                   'mM',
                                        \                 ],
                                        \                    'x',
                                        \                         1)
@@ -422,6 +521,8 @@ fu! s:mappings_install() abort
     xno <nowait> <silent> ma    :<C-U>call <SID>arrow()<CR>
     xno <nowait> <silent> mb    :<C-U>call <SID>box()<CR>
     xno <nowait> <silent> me    :<C-U>call <SID>ellipse()<CR>
+    xno <nowait> <silent> mm    :<C-U>call <SID>arrow_cycle(0)<CR>
+    xno <nowait> <silent> mM    :<C-U>call <SID>arrow_cycle(1)<CR>
 
     nno <nowait> <silent> m?    :<C-U>h my-draw-it<CR>
 endfu
@@ -654,6 +755,45 @@ fu! s:restore_selection(x0, y0, x1, y1) abort
     call setpos("'>", [0, a:y0, a:x0, 0])
     call setpos("'<", [0, a:y1, a:x1, 0])
     norm! gv
+endfu
+
+"}}}
+" segment "{{{
+
+" if we pass an optional argument to the function, it will draw spaces,
+" thus erasing a segment instead of drawing it
+
+fu! s:segment(coords, ...) abort
+    let [x0, y0, x1, y1] = a:coords
+
+    " reorder the coordinates to make sure the first ones describe the point
+    " on the left, and the last ones the point on the right
+    let [point1, point2] = sort([[x0, y0], [x1, y1]], {a, b -> a[0] - b[0]})
+    let [x0, y0, x1, y1] = point1 + point2
+
+    let rchar = a:0
+              \ ? ' '
+              \ : x0 == x1
+              \     ? '|'
+              \     : y0 == y1
+              \         ? '_'
+              \         : y0 > y1
+              \             ? '/'
+              \             : '\'
+
+    if x0 ==# x1
+        exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr'.rchar
+
+    elseif y0 ==# y1
+        exe 'norm! '.y0.'G'.x0."|\<C-v>".x1.'|r'.rchar
+
+    else
+        for i in range(x0, x0 + abs(y1 - y0))
+            " if y0 > y1, we must decrement the line address, otherwise
+            " increment
+            call s:set_char_at(rchar, i, y0 + (y0 > y1 ? (x0 - i) : (i - x0)))
+        endfor
+    endif
 endfu
 
 "}}}
