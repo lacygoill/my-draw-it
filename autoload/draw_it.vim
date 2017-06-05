@@ -1,19 +1,6 @@
 " TODO:
 "
-" - don't put the `o` character right before the tip of the arrow
-"
-" - remove trailing whitespace in red
-"
 " - allow moving visual selection beyond first/last line
-"
-" - When we read the help `m?`, the drawing mappings can cause errors.
-"   For example, if we try to move beyond the limit of the buffer with `j` and
-"   `k`. We should probably make the mappings buffer-local.
-"
-" - Besides, we should improve the save/restore functions, so that they
-"   restore buffer-local mappings inside the right buffer (and make sure it
-"   still exists before trying to restore them).
-"   Use `bufexists()` and `:{count}bufdo`.
 
 " data "{{{
 
@@ -163,8 +150,8 @@ fu! s:arrow(...) abort
         " draw 2nd segment of the arrow
         call s:segment([xb, yb, x1, y1])
 
-        " draw an `o` character where the 2 segments of the arrow break at
-        call s:set_char_at('o', xb, yb)
+        " draw a `+` character where the 2 segments of the arrow break at
+        call s:set_char_at('+', xb, yb)
 
         " draw the tip of the arrow
         " This line must be adapted so that `s:arrow()` can draw the tip of any
@@ -175,6 +162,9 @@ fu! s:arrow(...) abort
     endif
 
     call s:restore_selection(x0, y0, x1, y1)
+
+    " trim ending whitespace
+    '<,'>TW
 endfu
 
 "}}}
@@ -530,7 +520,7 @@ fu! s:mappings_install() abort
     xno <nowait> <silent> mm    :<C-U>call <SID>arrow_cycle(0)<CR>
     xno <nowait> <silent> mM    :<C-U>call <SID>arrow_cycle(1)<CR>
 
-    nno <nowait> <silent> m?    :<C-U>h my-draw-it<CR>
+    nno <nowait> <silent> m?    :<C-U>call draw_it#stop() <bar> h my-draw-it<CR>
 endfu
 
 "}}}
