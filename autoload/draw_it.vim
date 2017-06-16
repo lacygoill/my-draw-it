@@ -259,18 +259,12 @@ fu! s:box() abort
     let [y0, y1] = [line("'<"),    line("'>")]
 
     " draw the horizontal sides of the box
-    exe 'norm! '.y0.'G'.x0.'|v'.x1.'|r-'
-    exe 'norm! '.y1.'G'.x0.'|v'.x1.'|r-'
+    exe 'norm! '.y0.'G'.(x0+1).'|v'.(x1-1).'|r_'
+    exe 'norm! '.y1.'G'.x0.'|v'.x1.'|r_'
 
     " draw the vertical sides of the box
-    exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr|'
-    exe 'norm! '.y1.'G'.x1."|\<C-v>".y0.'Gr|'
-
-    " draw the corners of the box
-    call s:set_char_at('+', x0, y0)
-    call s:set_char_at('+', x0, y1)
-    call s:set_char_at('+', x1, y0)
-    call s:set_char_at('+', x1, y1)
+    exe 'norm! '.(y0+1).'G'.x0."|\<C-v>".y1.'Gr|'
+    exe 'norm! '.y1.'G'.x1."|\<C-v>".(y0+1).'Gr|'
 
     call s:restore_selection(x0, y0, x1, y1)
 endfu
