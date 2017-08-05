@@ -2,7 +2,7 @@
 "
 " - allow moving visual selection beyond first/last line
 
-" data "{{{
+" data {{{1
 
 " We initialize the state of the plugin to 'disabled'.
 " But only if it hasn't already been initialized.
@@ -86,26 +86,17 @@ let s:intersection = {
                      \ '<Home>'     : 'X',
                      \ }
 
-"}}}
-" above_first_line "{{{
-
-fu! s:above_first_line(key) abort
+fu! s:above_first_line(key) abort "{{{1
     return count(['<Up>', '<PageUp>', '<Home>', '^'], a:key)
             \ && s:state ==# 'drawing' && line('.') == 1
 endfu
 
-"}}}
-" beyond_last_line"{{{
-
-fu! s:beyond_last_line(key) abort
+fu! s:beyond_last_line(key) abort "{{{1
     return count(['<Down>', '<PageDown>', '<End>', 'v'], a:key)
             \ && s:state ==# 'drawing' && line('.') == line('$')
 endfu
 
-"}}}
-" arrow "{{{
-
-fu! s:arrow(...) abort
+fu! s:arrow(...) abort "{{{1
 
     " We initialize the coordinates of the beginning and end of the arrow,
     " as well as its tip.
@@ -167,10 +158,7 @@ fu! s:arrow(...) abort
     '<,'>TW
 endfu
 
-"}}}
-" arrow_cycle "{{{
-
-fu! s:arrow_cycle(back) abort
+fu! s:arrow_cycle(back) abort "{{{1
     " Why `min()`, `max()`?
     "
     " We could have hit `O` in visual mode, which would have switch the
@@ -251,10 +239,7 @@ fu! s:arrow_cycle(back) abort
     endif
 endfu
 
-"}}}
-" box "{{{
-
-fu! s:box() abort
+fu! s:box() abort "{{{1
     let [x0, x1] = [virtcol("'<"), virtcol("'>")]
     let [y0, y1] = [line("'<"),    line("'>")]
 
@@ -269,10 +254,7 @@ fu! s:box() abort
     call s:restore_selection(x0, y0, x1, y1)
 endfu
 
-"}}}
-" change_state "{{{
-
-fu! draw_it#change_state(erasing_mode) abort
+fu! draw_it#change_state(erasing_mode) abort "{{{1
 
     if s:state ==# 'disabled'
         let s:ve_save  = &ve
@@ -319,7 +301,7 @@ fu! draw_it#change_state(erasing_mode) abort
                                        \                    'x',
                                        \                         1)
 
-        " The last argument passed to `s:mappings_save()` is 1. "{{{
+        " The last argument passed to `s:mappings_save()` is 1. {{{
         " This is very important. It means that we save global mappings.
         " We aren't interested in buffer-local ones.
         " Why?
@@ -358,10 +340,7 @@ fu! draw_it#change_state(erasing_mode) abort
     call s:mappings_toggle()
 endfu
 
-"}}}
-" draw_it "{{{
-
-fu! s:draw_it(key) abort
+fu! s:draw_it(key) abort "{{{1
 
     if s:beyond_last_line(a:key)
         call append('.', '')
@@ -390,10 +369,7 @@ fu! s:draw_it(key) abort
     endif
 endfu
 
-"}}}
-" ellipse "{{{
-
-fu! s:ellipse() abort
+fu! s:ellipse() abort "{{{1
     let [x0, x1] = [virtcol("'<"), virtcol("'>")]
     let [y0, y1] = [line("'<"),    line("'>")]
 
@@ -438,7 +414,7 @@ fu! s:ellipse() abort
     call s:restore_selection(x0, y0, x1, y1)
 endfu
 
-fu! s:four(x, y, xoff, yoff, a, b) abort
+fu! s:four(x, y, xoff, yoff, a, b) abort "{{{1
     let x  = a:xoff + a:x
     let y  = a:yoff + a:y
     let lx = a:xoff - a:x
@@ -450,10 +426,7 @@ fu! s:four(x, y, xoff, yoff, a, b) abort
     call s:set_char_at('*',  x, by)
 endfu
 
-"}}}
-" mappings_install "{{{
-
-fu! s:mappings_install() abort
+fu! s:mappings_install() abort "{{{1
     let args = ' <nowait> <silent> '
 
     for l:key in [
@@ -517,8 +490,7 @@ fu! s:mappings_install() abort
     nno <nowait> <silent> m?    :<C-U>call draw_it#stop() <bar> h my-draw-it<CR>
 endfu
 
-"}}}
-" mappings_restore "{{{
+" mappings_restore {{{1
 
 " Warning:
 " Don't try to restore a buffer local mapping unless you're sure that, when
@@ -564,8 +536,7 @@ fu! s:mappings_restore(mappings) abort
 
 endfu
 
-"}}}
-" mappings_save "{{{
+" mappings_save {{{1
 
 " Usage:
 "
@@ -573,7 +544,7 @@ endfu
 "     let my_local_mappings  = s:mappings_save(['key1', 'key2', …], 'n', 0)
 "
 
-" Output example: "{{{
+" Output example: {{{
 "
 "     { '<left>' :
 "                \
@@ -630,7 +601,7 @@ fu! s:mappings_save(keys, mode, global) abort
                                         \ 'mode'     : a:mode,
                                         \ }
 
-            " If there's no mapping, why do we still save this dictionary: "{{{
+            " If there's no mapping, why do we still save this dictionary: {{{
 
             "     {
             "     \ 'unmapped' : 1,
@@ -684,11 +655,7 @@ fu! s:mappings_save(keys, mode, global) abort
     return mappings
 endfu
 
-
-"}}}
-" mappings_toggle "{{{
-
-fu! s:mappings_toggle() abort
+fu! s:mappings_toggle() abort "{{{1
     if s:state ==# 'disabled'
         call draw_it#stop()
 
@@ -708,10 +675,7 @@ fu! s:mappings_toggle() abort
     endif
 endfu
 
-"}}}
-" replace_char"{{{
-
-fu! s:replace_char(key) abort
+fu! s:replace_char(key) abort "{{{1
 
     " This function is called before and then after a motion (left, up, …).
     " It must return the character to draw.
@@ -738,22 +702,16 @@ fu! s:replace_char(key) abort
                \  )
 endfu
 
-"}}}
-" restore_selection "{{{
-
-fu! s:restore_selection(x0, y0, x1, y1) abort
+fu! s:restore_selection(x0, y0, x1, y1) abort "{{{1
     call setpos("'>", [0, a:y0, a:x0, 0])
     call setpos("'<", [0, a:y1, a:x1, 0])
     norm! gv
 endfu
 
-"}}}
-" segment "{{{
-
+fu! s:segment(coords, ...) abort "{{{1
 " if we pass an optional argument to the function, it will draw spaces,
 " thus erasing a segment instead of drawing it
 
-fu! s:segment(coords, ...) abort
     let [x0, y0, x1, y1] = a:coords
 
     " reorder the coordinates to make sure the first ones describe the point
@@ -786,10 +744,7 @@ fu! s:segment(coords, ...) abort
     endif
 endfu
 
-"}}}
-" set_char_at "{{{
-
-fu! s:set_char_at(char, x, y) abort
+fu! s:set_char_at(char, x, y) abort "{{{1
     " move on line whose address is `y`
     exe a:y
 
@@ -802,10 +757,7 @@ fu! s:set_char_at(char, x, y) abort
     endif
 endfu
 
-"}}}
-" stop "{{{
-
-fu! draw_it#stop() abort
+fu! draw_it#stop() abort "{{{1
     let s:state = 'disabled'
 
     if exists('s:original_mappings_normal')
@@ -821,10 +773,7 @@ fu! draw_it#stop() abort
     echom '[Drawing/Erasing] disabled'
 endfu
 
-"}}}
-" unbounded_vertical_motion "{{{
-
-fu! s:unbounded_vertical_motion(motion) abort
+fu! s:unbounded_vertical_motion(motion) abort "{{{1
     if a:motion ==# 'j' && line('.') == line('$')
         call append('.', repeat(' ', virtcol('.')))
 
@@ -834,5 +783,3 @@ fu! s:unbounded_vertical_motion(motion) abort
 
     exe 'norm! '.a:motion
 endfu
-
-"}}}
