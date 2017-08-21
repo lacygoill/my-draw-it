@@ -593,13 +593,13 @@ fu! s:mappings_save(keys, mode, global) abort
             " save info about the global one
             let map_info        = maparg(l:key, a:mode, 0, 1)
             let mappings[l:key] = !empty(map_info)
-                                \     ? map_info
-                                \     : {
-                                        \ 'unmapped' : 1,
-                                        \ 'buffer'   : 0,
-                                        \ 'lhs'      : l:key,
-                                        \ 'mode'     : a:mode,
-                                        \ }
+                               \?     map_info
+                               \:     {
+                               \       'unmapped' : 1,
+                               \       'buffer'   : 0,
+                               \       'lhs'      : l:key,
+                               \       'mode'     : a:mode,
+                               \      }
 
             " If there's no mapping, why do we still save this dictionary: {{{
 
@@ -642,13 +642,13 @@ fu! s:mappings_save(keys, mode, global) abort
         for l:key in a:keys
             let map_info        = maparg(l:key, a:mode, 0, 1)
             let mappings[l:key] = !empty(map_info)
-                                \     ? map_info
-                                \     : {
-                                        \ 'unmapped' : 1,
-                                        \ 'buffer'   : 1,
-                                        \ 'lhs'      : l:key,
-                                        \ 'mode'     : a:mode,
-                                        \ }
+                               \?     map_info
+                               \:     {
+                               \        'unmapped' : 1,
+                               \        'buffer'   : 1,
+                               \        'lhs'      : l:key,
+                               \        'mode'     : a:mode,
+                               \      }
         endfor
     endif
 
@@ -695,10 +695,10 @@ fu! s:replace_char(key) abort "{{{1
     exe 'norm! r'
                \ .(
                \   s:state ==# 'erasing'
-               \   ? ' '
-               \   : cchar =~# s:crossing_keys[a:key] && cchar !=# s:key2char[a:key]
-               \         ? s:intersection[a:key]
-               \         : s:key2char[a:key]
+               \?      ' '
+               \:  cchar =~# s:crossing_keys[a:key] && cchar !=# s:key2char[a:key]
+               \?      s:intersection[a:key]
+               \:      s:key2char[a:key]
                \  )
 endfu
 
@@ -720,14 +720,14 @@ fu! s:segment(coords, ...) abort "{{{1
     let [x0, y0, x1, y1] = point1 + point2
 
     let rchar = a:0
-              \ ? ' '
-              \ : x0 == x1
-              \     ? '|'
-              \     : y0 == y1
-              \         ? '_'
-              \         : y0 > y1
-              \             ? '/'
-              \             : '\'
+             \?     ' '
+             \: x0 == x1
+             \?     '|'
+             \: y0 == y1
+             \?     '_'
+             \: y0 > y1
+             \?     '/'
+             \:     '\'
 
     if x0 ==# x1
         exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr'.rchar
