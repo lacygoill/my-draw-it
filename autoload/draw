@@ -2,6 +2,13 @@
 "
 " - allow moving visual selection beyond first/last line
 
+" guard {{{1
+
+if exists('g:auto_loaded_draw')
+    finish
+endif
+let g:auto_loaded_draw = 1
+
 " data {{{1
 
 " We initialize the state of the plugin to 'disabled'.
