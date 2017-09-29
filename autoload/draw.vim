@@ -261,7 +261,7 @@ fu! s:box() abort "{{{1
     call s:restore_selection(x0, y0, x1, y1)
 endfu
 
-fu! draw_it#change_state(erasing_mode) abort "{{{1
+fu! draw#change_state(erasing_mode) abort "{{{1
 
     if s:state ==# 'disabled'
         let s:ve_save  = &ve
@@ -347,7 +347,7 @@ fu! draw_it#change_state(erasing_mode) abort "{{{1
     call s:mappings_toggle()
 endfu
 
-fu! s:draw_it(key) abort "{{{1
+fu! s:draw(key) abort "{{{1
 
     if s:beyond_last_line(a:key)
         call append('.', '')
@@ -447,7 +447,7 @@ fu! s:mappings_install() abort "{{{1
                  \ '<End>',
                  \ ]
         exe 'nno '.args.' '.l:key
-                          \.' :<C-U>call <SID>draw_it('.string('<lt>'.l:key[1:]).')<CR>'
+                          \.' :<C-U>call <SID>draw('.string('<lt>'.l:key[1:]).')<CR>'
     endfor
 
     for l:key in [
@@ -457,7 +457,7 @@ fu! s:mappings_install() abort "{{{1
                  \ '^',
                  \ ]
         exe 'nno '.args.' '.l:key
-                    \.' :<C-U>call <SID>draw_it('.string(l:key).')<CR>'
+                    \.' :<C-U>call <SID>draw('.string(l:key).')<CR>'
     endfor
 
     for l:key in [
@@ -664,7 +664,7 @@ endfu
 
 fu! s:mappings_toggle() abort "{{{1
     if s:state ==# 'disabled'
-        call draw_it#stop()
+        call draw#stop()
 
     else
         call s:mappings_install()
@@ -764,7 +764,7 @@ fu! s:set_char_at(char, x, y) abort "{{{1
     endif
 endfu
 
-fu! draw_it#stop() abort "{{{1
+fu! draw#stop() abort "{{{1
     let s:state = 'disabled'
 
     if exists('s:original_mappings_normal')
