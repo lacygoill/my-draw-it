@@ -94,12 +94,12 @@ let s:intersection = {
                      \ }
 
 fu! s:above_first_line(key) abort "{{{1
-    return count(['<Up>', '<PageUp>', '<Home>', '^'], a:key)
+    return index(['<Up>', '<PageUp>', '<Home>', '^'], a:key) != -1
             \ && s:state ==# 'drawing' && line('.') == 1
 endfu
 
 fu! s:beyond_last_line(key) abort "{{{1
-    return count(['<Down>', '<PageDown>', '<End>', 'v'], a:key)
+    return index(['<Down>', '<PageDown>', '<End>', 'v'], a:key) != -1
             \ && s:state ==# 'drawing' && line('.') == line('$')
 endfu
 
@@ -355,7 +355,7 @@ fu! s:draw(key) abort "{{{1
         call append(0, '')
     endif
 
-    if count([
+    if index([
              \ '<Left>',
              \ '<Right>',
              \ '<Down>',
@@ -365,13 +365,13 @@ fu! s:draw(key) abort "{{{1
              \ '<End>',
              \ '<Home>'
              \ ],
-             \     a:key)
+             \     a:key) != -1
 
         call s:replace_char(a:key)
         exe 'norm! '.s:key2motion[a:key]
         call s:replace_char(a:key)
 
-    elseif count(['^', 'v', '<', '>'], a:key)
+    elseif index(['^', 'v', '<', '>'], a:key) != -1
         exe 'norm! r'.s:key2char[a:key].s:key2motion[a:key].'r'.s:key2char[a:key]
     endif
 endfu
