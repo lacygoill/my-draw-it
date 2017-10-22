@@ -165,7 +165,7 @@ fu! s:arrow(...) abort "{{{1
     '<,'>TW
 endfu
 
-fu! s:arrow_cycle(back) abort "{{{1
+fu! s:arrow_cycle(fwd) abort "{{{1
     " Why `min()`, `max()`?
     "
     " We could have hit `O` in visual mode, which would have switch the
@@ -214,7 +214,7 @@ fu! s:arrow_cycle(back) abort "{{{1
         " Ex: B>, Cv, A^, …
         let cur_state = keys(cur_arrow)[0].values(cur_arrow)[0]
         let states    = ['A<', 'A^', 'B^', 'B>', 'C>', 'Cv', 'Dv', 'D<']
-        let new_state = states[(index(states, cur_state) + (a:back ? -1 : 1)) % len(states)]
+        let new_state = states[(index(states, cur_state) + (a:fwd ? 1 : -1)) % len(states)]
         let tip       = new_state[1]
 
         let [height, width] = [abs(y1 - y0), x1 - x0]
@@ -491,8 +491,8 @@ fu! s:mappings_install() abort "{{{1
     xno <nowait> <silent> ma    :<C-U>call <SID>arrow()<CR>
     xno <nowait> <silent> mb    :<C-U>call <SID>box()<CR>
     xno <nowait> <silent> me    :<C-U>call <SID>ellipse()<CR>
-    xno <nowait> <silent> mm    :<C-U>call <SID>arrow_cycle(0)<CR>
-    xno <nowait> <silent> mM    :<C-U>call <SID>arrow_cycle(1)<CR>
+    xno <nowait> <silent> mm    :<C-U>call <SID>arrow_cycle(1)<CR>
+    xno <nowait> <silent> mM    :<C-U>call <SID>arrow_cycle(0)<CR>
 
     nno <nowait> <silent> m?    :<C-U>call draw_it#stop() <bar> h my-draw-it<CR>
 endfu
