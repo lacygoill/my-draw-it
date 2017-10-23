@@ -535,13 +535,13 @@ fu! s:replace_char(key) abort "{{{1
     let cchar = getline('.')[col('.')-1]
 
     exe 'norm! r'
-               \ .(
-               \   s:state ==# 'erasing'
-               \?      ' '
-               \:  cchar =~# s:crossing_keys[a:key] && cchar !=# s:key2char[a:key]
-               \?      s:intersection[a:key]
-               \:      s:key2char[a:key]
-               \  )
+    \            .(
+    \                s:state ==# 'erasing'
+    \              ?    ' '
+    \              : cchar =~# s:crossing_keys[a:key] && cchar !=# s:key2char[a:key]
+    \              ?      s:intersection[a:key]
+    \              :      s:key2char[a:key]
+    \             )
 endfu
 
 fu! s:restore_selection(x0, y0, x1, y1) abort "{{{1
@@ -562,14 +562,14 @@ fu! s:segment(coords, ...) abort "{{{1
     let [x0, y0, x1, y1] = point1 + point2
 
     let rchar = a:0
-             \?     ' '
-             \: x0 == x1
-             \?     '|'
-             \: y0 == y1
-             \?     '_'
-             \: y0 > y1
-             \?     '/'
-             \:     '\'
+    \?              ' '
+    \:          x0 == x1
+    \?              '|'
+    \:          y0 == y1
+    \?              '_'
+    \:          y0 > y1
+    \?              '/'
+    \:              '\'
 
     if x0 ==# x1
         exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr'.rchar
