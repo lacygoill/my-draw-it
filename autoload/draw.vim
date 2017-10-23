@@ -38,14 +38,14 @@ let g:auto_loaded_draw = 1
 let s:state = get(s:, 'state', 'disabled')
 
 let s:key2char = {
-                 \ '<Left>'     : '-',
-                 \ '<Right>'    : '-',
-                 \ '<Down>'     : '|',
-                 \ '<Up>'       : '|',
-                 \ '<PageDown>' : '\',
-                 \ '<PageUp>'   : '/',
-                 \ '<Home>'     : '\',
-                 \ '<End>'      : '/',
+                 \ '<left>'     : '-',
+                 \ '<right>'    : '-',
+                 \ '<down>'     : '|',
+                 \ '<up>'       : '|',
+                 \ '<pagedown>' : '\',
+                 \ '<pageup>'   : '/',
+                 \ '<home>'     : '\',
+                 \ '<end>'      : '/',
                  \ '<'          : '<',
                  \ '>'          : '>',
                  \ 'v'          : 'v',
@@ -53,44 +53,44 @@ let s:key2char = {
                  \ }
 
 let s:key2motion = {
-                   \ '<Left>'     : 'h',
-                   \ '<Right>'    : 'l',
-                   \ '<Down>'     : 'j',
-                   \ '<Up>'       : 'k',
-                   \ '<PageDown>' : 'lj',
-                   \ '<PageUp>'   : 'lk',
-                   \ '<End>'      : 'hj',
-                   \ '<Home>'     : 'hk',
+                   \ '<left>'     : 'h',
+                   \ '<right>'    : 'l',
+                   \ '<down>'     : 'j',
+                   \ '<up>'       : 'k',
+                   \ '<pagedown>' : 'lj',
+                   \ '<pageup>'   : 'lk',
+                   \ '<end>'      : 'hj',
+                   \ '<home>'     : 'hk',
                    \ '<'          : 'h',
                    \ '>'          : 'l',
                    \ 'v'          : 'j',
                    \ '^'          : 'k',
-                   \ '<S-Left>'   : 'h',
-                   \ '<S-Right>'  : 'l',
-                   \ '<S-Down>'   : 'j',
-                   \ '<S-Up>'     : 'k',
+                   \ '<s-left>'   : 'h',
+                   \ '<s-right>'  : 'l',
+                   \ '<s-down>'   : 'j',
+                   \ '<s-up>'     : 'k',
                    \ }
 
 let s:crossing_keys = {
-                      \ '<Left>'     : '[-|+]',
-                      \ '<Right>'    : '[-|+]',
-                      \ '<Down>'     : '[-|+]',
-                      \ '<Up>'       : '[-|+]',
-                      \ '<PageDown>' : '[\/X]',
-                      \ '<PageUp>'   : '[\/X]',
-                      \ '<End>'      : '[\/X]',
-                      \ '<Home>'     : '[\/X]',
+                      \ '<left>'     : '[-|+]',
+                      \ '<right>'    : '[-|+]',
+                      \ '<down>'     : '[-|+]',
+                      \ '<up>'       : '[-|+]',
+                      \ '<pagedown>' : '[\/X]',
+                      \ '<pageup>'   : '[\/X]',
+                      \ '<end>'      : '[\/X]',
+                      \ '<home>'     : '[\/X]',
                       \ }
 
 let s:intersection = {
-                     \ '<Left>'     : '+',
-                     \ '<Right>'    : '+',
-                     \ '<Down>'     : '+',
-                     \ '<Up>'       : '+',
-                     \ '<PageDown>' : 'X',
-                     \ '<PageUp>'   : 'X',
-                     \ '<End>'      : 'X',
-                     \ '<Home>'     : 'X',
+                     \ '<left>'     : '+',
+                     \ '<right>'    : '+',
+                     \ '<down>'     : '+',
+                     \ '<up>'       : '+',
+                     \ '<pagedown>' : 'X',
+                     \ '<pageup>'   : 'X',
+                     \ '<end>'      : 'X',
+                     \ '<home>'     : 'X',
                      \ }
 
 fu! s:above_first_line(key) abort "{{{1
@@ -99,7 +99,7 @@ fu! s:above_first_line(key) abort "{{{1
 endfu
 
 fu! s:beyond_last_line(key) abort "{{{1
-    return index(['<Down>', '<PageDown>', '<End>', 'v'], a:key) != -1
+    return index(['<down>', '<pagedown>', '<end>', 'v'], a:key) != -1
             \ && s:state ==# 'drawing' && line('.') == line('$')
 endfu
 
@@ -270,18 +270,18 @@ fu! draw#change_state(erasing_mode) abort "{{{1
 
         let s:original_mappings_normal = tmp_mappings#save([
                                        \                     'm?',
-                                       \                     '<Left>',
-                                       \                     '<Right>',
-                                       \                     '<Down>',
-                                       \                     '<Up>',
-                                       \                     '<S-Left>',
-                                       \                     '<S-Right>',
-                                       \                     '<S-Down>',
-                                       \                     '<S-Up>',
-                                       \                     '<PageDown>',
-                                       \                     '<PageUp>',
-                                       \                     '<End>',
-                                       \                     '<Home>',
+                                       \                     '<left>',
+                                       \                     '<right>',
+                                       \                     '<down>',
+                                       \                     '<up>',
+                                       \                     '<s-left>',
+                                       \                     '<s-right>',
+                                       \                     '<s-down>',
+                                       \                     '<s-up>',
+                                       \                     '<pagedown>',
+                                       \                     '<pageup>',
+                                       \                     '<end>',
+                                       \                     '<home>',
                                        \                     '<',
                                        \                     '>',
                                        \                     'v',
@@ -356,14 +356,14 @@ fu! s:draw(key) abort "{{{1
     endif
 
     if index([
-             \ '<Left>',
-             \ '<Right>',
-             \ '<Down>',
-             \ '<Up>',
-             \ '<PageDown>',
-             \ '<PageUp>',
-             \ '<End>',
-             \ '<Home>'
+             \ '<left>',
+             \ '<right>',
+             \ '<down>',
+             \ '<up>',
+             \ '<pagedown>',
+             \ '<pageup>',
+             \ '<end>',
+             \ '<home>'
              \ ],
              \     a:key) != -1
 
@@ -437,17 +437,17 @@ fu! s:mappings_install() abort "{{{1
     let args = ' <nowait> <silent> '
 
     for l:key in [
-                 \ '<Left>',
-                 \ '<Right>',
-                 \ '<Down>',
-                 \ '<Up>',
-                 \ '<PageDown>',
-                 \ '<PageUp>',
-                 \ '<Home>',
-                 \ '<End>',
+                 \ '<left>',
+                 \ '<right>',
+                 \ '<down>',
+                 \ '<up>',
+                 \ '<pagedown>',
+                 \ '<pageup>',
+                 \ '<home>',
+                 \ '<end>',
                  \ ]
-        exe 'nno '.args.' '.l:key
-                          \.' :<C-U>call <SID>draw('.string('<lt>'.l:key[1:]).')<CR>'
+
+        exe printf('nno %s %s :<c-u>call <sid>draw(%s)<cr>', args, l:key, string('<lt>'.l:key[1:]))
     endfor
 
     for l:key in [
@@ -456,27 +456,26 @@ fu! s:mappings_install() abort "{{{1
                  \ 'v',
                  \ '^',
                  \ ]
-        exe 'nno '.args.' '.l:key
-                    \.' :<C-U>call <SID>draw('.string(l:key).')<CR>'
+
+        exe printf('nno %s %s :<c-u>call <sid>draw(%s)<cr>', args, l:key, string(l:key))
     endfor
 
     for l:key in [
-                 \ '<S-Left>',
-                 \ '<S-Right>',
-                 \ '<S-Down>',
-                 \ '<S-Up>',
+                 \ '<s-left>',
+                 \ '<s-right>',
+                 \ '<s-down>',
+                 \ '<s-up>',
                  \ ]
-        exe 'nno '.args.' '.l:key
-                         \ .' :<C-U>call <SID>unbounded_vertical_motion('
-                         \ .string(s:key2motion[l:key])
-                         \ .')<CR>'
+
+        exe printf('nno %s %s :<c-u>call <sid>unbounded_vertical_motion(%s)<cr>',
+        \          args, l:key, string(s:key2motion[l:key]))
     endfor
 
     for l:key in [
                  \ 'H',
                  \ 'L',
                  \ ]
-        exe 'nno '.args.' '.l:key.' 3'.tolower(l:key)
+        exe printf('nno %s %s 3%s', args, l:key, tolower(l:key))
     endfor
 
     for l:key in [
@@ -485,16 +484,17 @@ fu! s:mappings_install() abort "{{{1
                  \ 'J',
                  \ 'K',
                  \ ]
-        exe 'nno '.args.' '.l:key.' :<C-U>call <SID>unbounded_vertical_motion('.string(tolower(l:key)).')<CR>'
+        exe printf('nno %s %s :<c-u>call <sid>unbounded_vertical_motion(%s)<cr>',
+        \          args, l:key, string(tolower(l:key)))
     endfor
 
-    xno <nowait> <silent> ma    :<C-U>call <SID>arrow()<CR>
-    xno <nowait> <silent> mb    :<C-U>call <SID>box()<CR>
-    xno <nowait> <silent> me    :<C-U>call <SID>ellipse()<CR>
-    xno <nowait> <silent> mm    :<C-U>call <SID>arrow_cycle(1)<CR>
-    xno <nowait> <silent> mM    :<C-U>call <SID>arrow_cycle(0)<CR>
+    xno <nowait> <silent> ma    :<c-u>call <sid>arrow()<cr>
+    xno <nowait> <silent> mb    :<c-u>call <sid>box()<cr>
+    xno <nowait> <silent> me    :<c-u>call <sid>ellipse()<cr>
+    xno <nowait> <silent> mm    :<c-u>call <sid>arrow_cycle(1)<cr>
+    xno <nowait> <silent> mM    :<c-u>call <sid>arrow_cycle(0)<cr>
 
-    nno <nowait> <silent> m?    :<C-U>call draw_it#stop() <bar> h my-draw-it<CR>
+    nno <nowait> <silent> m?    :<C-U>call draw_it#stop() <bar> h my-draw-it<cr>
 endfu
 
 fu! s:mappings_toggle() abort "{{{1
