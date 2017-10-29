@@ -308,7 +308,7 @@ fu! draw#change_state(erasing_mode) abort "{{{1
                                        \                    'x',
                                        \                         1)
 
-        " The last argument passed to `tmp_mappings#save()` is 1. {{{
+        " The last argument passed to `my_lib#map_save()` is 1. {{{
         " This is very important. It means that we save global mappings.
         " We aren't interested in buffer-local ones.
         " Why?
@@ -603,10 +603,10 @@ fu! draw#stop() abort "{{{1
     let s:state = 'disabled'
 
     if exists('s:original_mappings_normal')
-        call tmp_mappings#restore(s:original_mappings_normal)
+        call my_lib#map_restore(s:original_mappings_normal)
     endif
     if exists('s:original_mappings_visual')
-        call tmp_mappings#restore(s:original_mappings_visual)
+        call my_lib#map_restore(s:original_mappings_visual)
     endif
 
     let &ve  = get(s:, 've_save', &ve)
