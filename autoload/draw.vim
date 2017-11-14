@@ -94,12 +94,12 @@ let s:intersection = {
                      \ }
 
 fu! s:above_first_line(key) abort "{{{1
-    return index(['<Up>', '<PageUp>', '<Home>', '^'], a:key) != -1
+    return index(['<Up>', '<PageUp>', '<Home>', '^'], a:key) >= 0
             \ && s:state ==# 'drawing' && line('.') == 1
 endfu
 
 fu! s:beyond_last_line(key) abort "{{{1
-    return index(['<down>', '<pagedown>', '<end>', 'v'], a:key) != -1
+    return index(['<down>', '<pagedown>', '<end>', 'v'], a:key) >= 0
             \ && s:state ==# 'drawing' && line('.') == line('$')
 endfu
 
@@ -371,7 +371,7 @@ fu! s:draw(key) abort "{{{1
         exe 'norm! '.s:key2motion[a:key]
         call s:replace_char(a:key)
 
-    elseif index(['^', 'v', '<', '>'], a:key) != -1
+    elseif index(['^', 'v', '<', '>'], a:key) >= 0
         exe 'norm! r'.s:key2char[a:key].s:key2motion[a:key].'r'.s:key2char[a:key]
     endif
 endfu
