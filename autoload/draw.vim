@@ -388,7 +388,7 @@ fu! s:ellipse() abort "{{{1
     let xi = 0
     let yi = b
     let ei = 0
-    call s:four(xi,yi,xoff,yoff,a,b)
+    call s:four(xi,yi,xoff,yoff)
     while xi <= a && yi >= 0
 
         let dy = a*a - 2*a*a*yi
@@ -415,13 +415,13 @@ fu! s:ellipse() abort "{{{1
         if xi > x1
             break
         endif
-        call s:four(xi, yi, xoff, yoff, a, b)
+        call s:four(xi, yi, xoff, yoff)
     endwhile
 
     call s:restore_selection(x0, y0, x1, y1)
 endfu
 
-fu! s:four(x, y, xoff, yoff, a, b) abort "{{{1
+fu! s:four(x, y, xoff, yoff) abort "{{{1
     let x  = a:xoff + a:x
     let y  = a:yoff + a:y
     let lx = a:xoff - a:x
@@ -513,7 +513,7 @@ fu! s:mappings_toggle() abort "{{{1
         " unintended results when drawing and reaching column 0.
         set whichwrap-=h
 
-        echom '['.substitute(s:state, '.', '\u&', '').'] '.'enabled'
+        echo '['.substitute(s:state, '.', '\u&', '').'] '.'enabled'
     endif
 endfu
 
@@ -612,7 +612,7 @@ fu! draw#stop() abort "{{{1
     let &ve  = get(s:, 've_save', &ve)
     let &ww  = get(s:, 'ww_save', &ww)
     let &sol = get(s:, 'sol_save', &sol)
-    echom '[Drawing/Erasing] disabled'
+    echo '[Drawing/Erasing] disabled'
 endfu
 
 fu! s:unbounded_vertical_motion(motion) abort "{{{1
