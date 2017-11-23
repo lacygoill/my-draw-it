@@ -267,6 +267,70 @@ fu! s:box() abort "{{{1
     call s:restore_selection(x0, y0, x1, y1)
 endfu
 
+fu! draw#box_prettify(line1, line2) abort "{{{1
+    let range = a:line1.','.a:line2
+    sil exe range.'s/-\@<=-\|--\@=/─/ge'
+
+    "                   ┌─ the character below is a plus or a bar
+    "                   │
+    let l:Rep_bar = {-> matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.') =~# '[+|]'
+    \                   ?    "\u2502"
+    \                   :    '|'
+    \               }
+    sil exe range.'s/|/\=l:Rep_bar()/ge'
+
+    " For  some reason,  we  can't we  write these  characters  directly in  the
+    " lambda (the line continuation has an effect on the issue):
+    "
+    "     • └
+    "     • │
+    "     • ┌
+    "
+    " Instead we must use their unicode point, or `nr2char()`:
+    "
+    "     • \u2514 = nr2char('0x2514',1) = └
+    "     • \u2502 = nr2char('0x2502',1) = │
+    "     • \u250c = nr2char('0x250c',1) = ┌
+
+    " FIXME: Why do these snippets fail:{{{
+    "
+    "     com! Cmd call Func()
+    "     fu! Func()
+    "         s/|/│/g                       ✘
+    "     endfu
+    "
+    "     let Lambda = {-> 1
+    "     \                ? '│' : ''}      ✘
+    "
+    " While at the same time, these work:
+    "
+    "     com! Cmd s/|/│/g                  ✔
+    "
+    "     let Lambda = {-> 1 ? '│' : ''}    ✔
+    "
+    " It seems some unicode characters cause an  issue, but not all.
+    "}}}
+    let l:Rep_plus = {->      matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.') =~# "\u2502"
+    \                      && matchstr(getline('.'), '\%'.virtcol('.').'v.\zs.') ==# '─'
+    \                         ?    "\u250c"
+    \
+    \                    :    matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.') =~# "\u2502"
+    \                      && matchstr(getline('.'), '.\%'.virtcol('.').'v') ==# '─'
+    \                         ?    '┐'
+    \
+    \                    :    matchstr(getline(line('.')-1), '\%'.virtcol('.').'v.') =~# "\u2502"
+    \                      && matchstr(getline('.'), '\%'.virtcol('.').'v.\zs.') ==# '─'
+    \                         ?    "\u2514"
+    \
+    \                    :    matchstr(getline(line('.')-1), '\%'.virtcol('.').'v.') =~# "\u2502"
+    \                      && matchstr(getline('.'), '.\%'.virtcol('.').'v') ==# '─'
+    \                         ?    '┘'
+    \                    :         '+'
+    \                }
+
+    sil exe range.'s/+/\=l:Rep_plus()/ge'
+endfu
+
 fu! draw#change_state(erasing_mode) abort "{{{1
 
     if s:state ==# 'disabled'
