@@ -2,8 +2,6 @@
 "
 " - allow moving visual selection beyond first/last line
 
-" guard {{{1
-
 if exists('g:auto_loaded_draw')
     finish
 endif
