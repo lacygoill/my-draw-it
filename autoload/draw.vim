@@ -2,10 +2,10 @@
 "
 " - allow moving visual selection beyond first/last line
 
-if exists('g:auto_loaded_draw')
+if exists('g:autoloaded_draw')
     finish
 endif
-let g:auto_loaded_draw = 1
+let g:autoloaded_draw = 1
 
 " data {{{1
 
