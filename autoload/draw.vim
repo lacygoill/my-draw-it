@@ -191,7 +191,7 @@ fu! s:arrow_cycle(fwd) abort "{{{1
                   \ 'D' : matchstr(getline("'>"), '\v%'.x0.'v.'),
                   \ }
 
-    let cur_arrow = filter(corners, 'v:val =~ ''[<>v^]''')
+    let cur_arrow = filter(corners, { k,v -> v =~ '[<>v^]' })
     if empty(cur_arrow)
         return
     endif
