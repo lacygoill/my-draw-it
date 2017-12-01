@@ -269,9 +269,9 @@ fu! draw#box_prettify(line1, line2) abort "{{{1
     let range = a:line1.','.a:line2
     sil exe range.'s/-\@<=-\|--\@=/─/ge'
 
-    "                   ┌─ the character below is a plus or a bar
-    "                   │
-    let l:Rep_bar = {-> matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.') =~# '[+|]'
+    "                                      ┌─ the character below is a plus or a bar
+    "                                      │
+    let l:Rep_bar = {-> s:get_chars_around(4) =~# '[+|]'
     \                   ?    "\u2502"
     \                   :    '|'
     \               }
@@ -308,20 +308,47 @@ fu! draw#box_prettify(line1, line2) abort "{{{1
     "
     " It seems some unicode characters cause an  issue, but not all.
     "}}}
-    let l:Rep_plus = {->      matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.') =~# "\u2502"
-    \                      && matchstr(getline('.'), '\%'.virtcol('.').'v.\zs.') ==# '─'
+
+    let l:Rep_plus = {->      s:get_chars_around(1) =~# '─'
+    \                      && s:get_chars_around(2) ==# '─'
+    \                      && s:get_chars_around(3) ==# '│'
+    \                      && s:get_chars_around(4) ==# '│'
+    \                         ?    "┼"
+    \
+    \                    :    s:get_chars_around(1) =~# '─'
+    \                      && s:get_chars_around(2) ==# '─'
+    \                      && s:get_chars_around(4) ==# '│'
+    \                         ?    '┬'
+    \
+    \                    :    s:get_chars_around(1) =~# '─'
+    \                      && s:get_chars_around(2) ==# '─'
+    \                      && s:get_chars_around(3) ==# '│'
+    \                         ?    '┴'
+    \
+    \                    :    s:get_chars_around(3) =~# '│'
+    \                      && s:get_chars_around(4) ==# '│'
+    \                      && s:get_chars_around(2) ==# '─'
+    \                         ?    '├'
+    \
+    \                    :    s:get_chars_around(3) =~# '│'
+    \                      && s:get_chars_around(4) ==# '│'
+    \                      && s:get_chars_around(1) ==# '─'
+    \                         ?    '┤'
+    \
+    \                    :    s:get_chars_around(4) =~# "\u2502"
+    \                      && s:get_chars_around(2) ==# '─'
     \                         ?    "\u250c"
     \
-    \                    :    matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.') =~# "\u2502"
-    \                      && matchstr(getline('.'), '.\%'.virtcol('.').'v') ==# '─'
+    \                    :    s:get_chars_around(4) =~# "\u2502"
+    \                      && s:get_chars_around(1) ==# '─'
     \                         ?    '┐'
     \
-    \                    :    matchstr(getline(line('.')-1), '\%'.virtcol('.').'v.') =~# "\u2502"
-    \                      && matchstr(getline('.'), '\%'.virtcol('.').'v.\zs.') ==# '─'
+    \                    :    s:get_chars_around(3) =~# "\u2502"
+    \                      && s:get_chars_around(2) ==# '─'
     \                         ?    "\u2514"
     \
-    \                    :    matchstr(getline(line('.')-1), '\%'.virtcol('.').'v.') =~# "\u2502"
-    \                      && matchstr(getline('.'), '.\%'.virtcol('.').'v') ==# '─'
+    \                    :    s:get_chars_around(3) =~# "\u2502"
+    \                      && s:get_chars_around(1) ==# '─'
     \                         ?    '┘'
     \                    :         '+'
     \                }
@@ -499,6 +526,16 @@ fu! s:four(x, y, xoff, yoff) abort "{{{1
     call s:set_char_at('*', lx, y)
     call s:set_char_at('*', lx, by)
     call s:set_char_at('*',  x, by)
+endfu
+
+fu! s:get_chars_around(i) abort "{{{1
+    return a:i == 1
+    \?         matchstr(getline(line('.')), '\%'.(virtcol('.')-1).'v.')
+    \:     a:i == 2
+    \?         matchstr(getline(line('.')), '\%'.virtcol('.').'v.\zs.')
+    \:     a:i == 3
+    \?         matchstr(getline(line('.')-1), '\%'.virtcol('.').'v.')
+    \:         matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.')
 endfu
 
 fu! s:mappings_install() abort "{{{1
