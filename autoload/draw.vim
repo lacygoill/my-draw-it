@@ -185,11 +185,11 @@ fu! s:arrow_cycle(fwd) abort "{{{1
     " A B
     " D C
     let corners = {
-                  \ 'A' : matchstr(getline("'<"), '\v%'.x0.'v.'),
-                  \ 'B' : matchstr(getline("'<"), '\v%'.x1.'v.'),
-                  \ 'C' : matchstr(getline("'>"), '\v%'.x1.'v.'),
-                  \ 'D' : matchstr(getline("'>"), '\v%'.x0.'v.'),
-                  \ }
+    \               'A' : matchstr(getline("'<"), '\v%'.x0.'v.'),
+    \               'B' : matchstr(getline("'<"), '\v%'.x1.'v.'),
+    \               'C' : matchstr(getline("'>"), '\v%'.x1.'v.'),
+    \               'D' : matchstr(getline("'>"), '\v%'.x0.'v.'),
+    \             }
 
     let cur_arrow = filter(corners, { k,v -> v =~ '[<>v^]' })
     if empty(cur_arrow)
