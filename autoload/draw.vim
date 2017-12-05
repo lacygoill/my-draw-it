@@ -267,7 +267,7 @@ endfu
 
 fu! draw#box_prettify(line1, line2) abort "{{{1
     let range = a:line1.','.a:line2
-    sil exe range.'s/-\@<=-\|--\@=/─/ge'
+    sil exe range.'s/-\@<=-\|--\@=/'."\u2500".'/ge'
 
     "                                      ┌─ the character below is a plus or a bar
     "                                      │
@@ -309,47 +309,47 @@ fu! draw#box_prettify(line1, line2) abort "{{{1
     " It seems some unicode characters cause an  issue, but not all.
     "}}}
 
-    let l:Rep_plus = {->      s:get_chars_around(1) =~# '─'
-    \                      && s:get_chars_around(2) ==# '─'
-    \                      && s:get_chars_around(3) ==# '│'
-    \                      && s:get_chars_around(4) ==# '│'
-    \                         ?    "┼"
+    let l:Rep_plus = {->      s:get_chars_around(1) =~# '\u2500'
+    \                      && s:get_chars_around(2) ==# '\u2500'
+    \                      && s:get_chars_around(3) ==# '\u2502'
+    \                      && s:get_chars_around(4) ==# '\u2502'
+    \                         ?    "\u253c"
     \
-    \                    :    s:get_chars_around(1) =~# '─'
-    \                      && s:get_chars_around(2) ==# '─'
-    \                      && s:get_chars_around(4) ==# '│'
-    \                         ?    '┬'
+    \                    :    s:get_chars_around(1) =~# '\u2500'
+    \                      && s:get_chars_around(2) ==# '\u2500'
+    \                      && s:get_chars_around(4) ==# '\u2502'
+    \                         ?    '\u252c'
     \
-    \                    :    s:get_chars_around(1) =~# '─'
-    \                      && s:get_chars_around(2) ==# '─'
-    \                      && s:get_chars_around(3) ==# '│'
-    \                         ?    '┴'
+    \                    :    s:get_chars_around(1) =~# '\u2500'
+    \                      && s:get_chars_around(2) ==# '\u2500'
+    \                      && s:get_chars_around(3) ==# '\u2502'
+    \                         ?    '\u2534'
     \
-    \                    :    s:get_chars_around(3) =~# '│'
-    \                      && s:get_chars_around(4) ==# '│'
-    \                      && s:get_chars_around(2) ==# '─'
-    \                         ?    '├'
+    \                    :    s:get_chars_around(3) =~# '\u2502'
+    \                      && s:get_chars_around(4) ==# '\u2502'
+    \                      && s:get_chars_around(2) ==# '\u2500'
+    \                         ?    '\u251c'
     \
-    \                    :    s:get_chars_around(3) =~# '│'
-    \                      && s:get_chars_around(4) ==# '│'
-    \                      && s:get_chars_around(1) ==# '─'
-    \                         ?    '┤'
+    \                    :    s:get_chars_around(3) =~# '\u2502'
+    \                      && s:get_chars_around(4) ==# '\u2502'
+    \                      && s:get_chars_around(1) ==# '\u2500'
+    \                         ?    '\u2524'
     \
     \                    :    s:get_chars_around(4) =~# "\u2502"
-    \                      && s:get_chars_around(2) ==# '─'
+    \                      && s:get_chars_around(2) ==# '\u2500'
     \                         ?    "\u250c"
     \
     \                    :    s:get_chars_around(4) =~# "\u2502"
-    \                      && s:get_chars_around(1) ==# '─'
-    \                         ?    '┐'
+    \                      && s:get_chars_around(1) ==# '\u2500'
+    \                         ?    '\u2510'
     \
     \                    :    s:get_chars_around(3) =~# "\u2502"
-    \                      && s:get_chars_around(2) ==# '─'
+    \                      && s:get_chars_around(2) ==# '\u2500'
     \                         ?    "\u2514"
     \
     \                    :    s:get_chars_around(3) =~# "\u2502"
-    \                      && s:get_chars_around(1) ==# '─'
-    \                         ?    '┘'
+    \                      && s:get_chars_around(1) ==# '\u2500'
+    \                         ?    '\u2518'
     \                    :         '+'
     \                }
 
