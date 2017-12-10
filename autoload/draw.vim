@@ -2,11 +2,6 @@
 "
 " - allow moving visual selection beyond first/last line
 
-if exists('g:autoloaded_draw')
-    finish
-endif
-let g:autoloaded_draw = 1
-
 " data {{{1
 
 " We initialize the state of the plugin to 'disabled'.
