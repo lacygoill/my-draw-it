@@ -358,45 +358,41 @@ fu! draw#change_state(erasing_mode) abort "{{{1
         let s:ww_save  = &ww
         let s:sol_save = &sol
 
-        let s:original_mappings_normal = lg#map#save([
-        \                                              'm?',
-        \                                              '<left>',
-        \                                              '<right>',
-        \                                              '<down>',
-        \                                              '<up>',
-        \                                              '<s-left>',
-        \                                              '<s-right>',
-        \                                              '<s-down>',
-        \                                              '<s-up>',
-        \                                              '<pagedown>',
-        \                                              '<pageup>',
-        \                                              '<end>',
-        \                                              '<home>',
-        \                                              '<',
-        \                                              '>',
-        \                                              'v',
-        \                                              '^',
-        \                                              'H',
-        \                                              'J',
-        \                                              'K',
-        \                                              'L',
-        \                                              'j',
-        \                                              'k',
-        \                                            ],
-        \                                              'n',
-        \                                                   1)
+        let s:original_mappings_normal = lg#map#save('n', 1, [
+        \                                                      'm?',
+        \                                                      '<left>',
+        \                                                      '<right>',
+        \                                                      '<down>',
+        \                                                      '<up>',
+        \                                                      '<s-left>',
+        \                                                      '<s-right>',
+        \                                                      '<s-down>',
+        \                                                      '<s-up>',
+        \                                                      '<pagedown>',
+        \                                                      '<pageup>',
+        \                                                      '<end>',
+        \                                                      '<home>',
+        \                                                      '<',
+        \                                                      '>',
+        \                                                      'v',
+        \                                                      '^',
+        \                                                      'H',
+        \                                                      'J',
+        \                                                      'K',
+        \                                                      'L',
+        \                                                      'j',
+        \                                                      'k',
+        \                                                    ])
 
-        let s:original_mappings_visual = lg#map#save([
-        \                                              'j',
-        \                                              'k',
-        \                                              'ma',
-        \                                              'mb',
-        \                                              'me',
-        \                                              'mm',
-        \                                              'mM',
-        \                                            ],
-        \                                               'x',
-        \                                                    1)
+        let s:original_mappings_visual = lg#map#save('x', 1, [
+        \                                                      'j',
+        \                                                      'k',
+        \                                                      'ma',
+        \                                                      'mb',
+        \                                                      'me',
+        \                                                      'mm',
+        \                                                      'mM',
+        \                                                    ])
 
         " The last argument passed to `lg#map#save()` is 1. {{{
         " This is very important. It means that we save global mappings.
