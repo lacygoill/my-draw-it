@@ -358,7 +358,7 @@ fu! draw#change_state(erasing_mode) abort "{{{1
         let s:ww_save  = &ww
         let s:sol_save = &sol
 
-        let s:original_mappings_normal = lg#map#save('n', 1, [
+        let s:original_mappings_normal = lg#map#save('n', 0, [
         \                                                      'm?',
         \                                                      '<left>',
         \                                                      '<right>',
@@ -384,7 +384,7 @@ fu! draw#change_state(erasing_mode) abort "{{{1
         \                                                      'k',
         \                                                    ])
 
-        let s:original_mappings_visual = lg#map#save('x', 1, [
+        let s:original_mappings_visual = lg#map#save('x', 0, [
         \                                                      'j',
         \                                                      'k',
         \                                                      'ma',
@@ -394,7 +394,7 @@ fu! draw#change_state(erasing_mode) abort "{{{1
         \                                                      'mM',
         \                                                    ])
 
-        " The last argument passed to `lg#map#save()` is 1. {{{
+        " The 2nd argument passed to `lg#map#save()` is 0. {{{
         " This is very important. It means that we save global mappings.
         " We aren't interested in buffer-local ones.
         " Why?
