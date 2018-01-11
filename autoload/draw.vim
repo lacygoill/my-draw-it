@@ -1,3 +1,8 @@
+if exists('g:autoloaded_draw')
+    finish
+endif
+let g:autoloaded_draw = 1
+
 " TODO:
 "
 " - allow moving visual selection beyond first/last line
