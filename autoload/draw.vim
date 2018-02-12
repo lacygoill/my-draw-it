@@ -93,12 +93,12 @@ let s:intersection = {
 
 fu! s:above_first_line(key) abort "{{{1
     return index(['<Up>', '<PageUp>', '<Home>', '^'], a:key) >= 0
-            \ && s:state is# 'drawing' && line('.') == 1
+            \ && s:state is# 'drawing' && line('.') ==# 1
 endfu
 
 fu! s:beyond_last_line(key) abort "{{{1
     return index(['<down>', '<pagedown>', '<end>', 'v'], a:key) >= 0
-            \ && s:state is# 'drawing' && line('.') == line('$')
+            \ && s:state is# 'drawing' && line('.') ==# line('$')
 endfu
 
 fu! s:arrow(...) abort "{{{1
@@ -132,10 +132,10 @@ fu! s:arrow(...) abort "{{{1
         let tip = x0 < x1 ? '>' : '<'
     endif
 
-    if x0 == x1 || y0 == y1
+    if x0 ==# x1 || y0 ==# y1
     " vertical/horizontal arrow
         call s:segment([x0, y0, x1, y1])
-        call s:set_char_at(x0 == x1 ? 'v' : '>', x1 , y1)
+        call s:set_char_at(x0 ==# x1 ? 'v' : '>', x1 , y1)
 
     else
         " diagonal arrow
@@ -525,11 +525,11 @@ fu! s:four(x, y, xoff, yoff) abort "{{{1
 endfu
 
 fu! s:get_chars_around(i) abort "{{{1
-    return a:i == 1
+    return a:i ==# 1
     \?         matchstr(getline(line('.')), '\%'.(virtcol('.')-1).'v.')
-    \:     a:i == 2
+    \:     a:i ==# 2
     \?         matchstr(getline(line('.')), '\%'.virtcol('.').'v.\zs.')
-    \:     a:i == 3
+    \:     a:i ==# 3
     \?         matchstr(getline(line('.')-1), '\%'.virtcol('.').'v.')
     \:         matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.')
 endfu
@@ -664,11 +664,11 @@ fu! s:segment(coords, ...) abort "{{{1
 
     let rchar = a:0
     \?              ' '
-    \:          x0 == x1
+    \:          x0 ==# x1
     \?              '|'
-    \:          y0 == y1
+    \:          y0 ==# y1
     \?              '_'
-    \:          y0 > y1
+    \:          y0 ># y1
     \?              '/'
     \:              '\'
 
@@ -717,10 +717,10 @@ fu! draw#stop() abort "{{{1
 endfu
 
 fu! s:unbounded_vertical_motion(motion) abort "{{{1
-    if a:motion is# 'j' && line('.') == line('$')
+    if a:motion is# 'j' && line('.') ==# line('$')
         call append('.', repeat(' ', virtcol('.')))
 
-    elseif a:motion is# 'k' && line('.') == 1
+    elseif a:motion is# 'k' && line('.') ==# 1
         call append(0, repeat(' ', virtcol('.')))
     endif
 
