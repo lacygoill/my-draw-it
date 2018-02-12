@@ -639,7 +639,7 @@ fu! s:replace_char(key) abort "{{{1
     \            .(
     \                s:state is# 'erasing'
     \              ?    ' '
-    \              : cchar =~# s:crossing_keys[a:key] && cchar !=# s:key2char[a:key]
+    \              : cchar =~# s:crossing_keys[a:key] && cchar isnot# s:key2char[a:key]
     \              ?      s:intersection[a:key]
     \              :      s:key2char[a:key]
     \             )
