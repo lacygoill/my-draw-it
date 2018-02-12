@@ -456,7 +456,7 @@ fu! s:draw(key) abort "{{{1
              \ '<end>',
              \ '<home>'
              \ ],
-             \     a:key) != -1
+             \     a:key) !=# -1
 
         call s:replace_char(a:key)
         exe 'norm! '.s:key2motion[a:key]
