@@ -93,12 +93,12 @@ let s:intersection = {
 
 fu! s:above_first_line(key) abort "{{{1
     return index(['<Up>', '<PageUp>', '<Home>', '^'], a:key) >= 0
-            \ && s:state ==# 'drawing' && line('.') == 1
+            \ && s:state is# 'drawing' && line('.') == 1
 endfu
 
 fu! s:beyond_last_line(key) abort "{{{1
     return index(['<down>', '<pagedown>', '<end>', 'v'], a:key) >= 0
-            \ && s:state ==# 'drawing' && line('.') == line('$')
+            \ && s:state is# 'drawing' && line('.') == line('$')
 endfu
 
 fu! s:arrow(...) abort "{{{1
@@ -198,12 +198,12 @@ fu! s:arrow_cycle(is_fwd) abort "{{{1
 
     if y0 ==# y1
     " horizontal arrow
-        exe 'norm! '.(values(cur_arrow)[0] ==# '<' ? x1.'|r>'.x0 : x0.'|r<'.x1).'|r_'
+        exe 'norm! '.(values(cur_arrow)[0] is# '<' ? x1.'|r>'.x0 : x0.'|r<'.x1).'|r_'
         return
 
     elseif x0 ==# x1
     " vertical arrow
-        exe 'norm! '.(values(cur_arrow)[0] ==# 'v' ? y0.'Gr^'.y1 : y1.'Grv'.y0).'Gr|'
+        exe 'norm! '.(values(cur_arrow)[0] is# 'v' ? y0.'Gr^'.y1 : y1.'Grv'.y0).'Gr|'
         return
 
     else
@@ -310,45 +310,45 @@ fu! draw#box_prettify(line1, line2) abort "{{{1
     "}}}
 
     let l:Rep_plus = {->      s:get_chars_around(1) =~# "\u2500"
-    \                      && s:get_chars_around(2) ==# "\u2500"
-    \                      && s:get_chars_around(3) ==# "\u2502"
-    \                      && s:get_chars_around(4) ==# "\u2502"
+    \                      && s:get_chars_around(2) is# "\u2500"
+    \                      && s:get_chars_around(3) is# "\u2502"
+    \                      && s:get_chars_around(4) is# "\u2502"
     \                         ?    "\u253c"
     \
     \                    :    s:get_chars_around(1) =~# "\u2500"
-    \                      && s:get_chars_around(2) ==# "\u2500"
-    \                      && s:get_chars_around(4) ==# "\u2502"
+    \                      && s:get_chars_around(2) is# "\u2500"
+    \                      && s:get_chars_around(4) is# "\u2502"
     \                         ?    "\u252c"
     \
     \                    :    s:get_chars_around(1) =~# "\u2500"
-    \                      && s:get_chars_around(2) ==# "\u2500"
-    \                      && s:get_chars_around(3) ==# "\u2502"
+    \                      && s:get_chars_around(2) is# "\u2500"
+    \                      && s:get_chars_around(3) is# "\u2502"
     \                         ?    "\u2534"
     \
     \                    :    s:get_chars_around(3) =~# "\u2502"
-    \                      && s:get_chars_around(4) ==# "\u2502"
-    \                      && s:get_chars_around(2) ==# "\u2500"
+    \                      && s:get_chars_around(4) is# "\u2502"
+    \                      && s:get_chars_around(2) is# "\u2500"
     \                         ?    "\u251c"
     \
     \                    :    s:get_chars_around(3) =~# "\u2502"
-    \                      && s:get_chars_around(4) ==# "\u2502"
-    \                      && s:get_chars_around(1) ==# "\u2500"
+    \                      && s:get_chars_around(4) is# "\u2502"
+    \                      && s:get_chars_around(1) is# "\u2500"
     \                         ?    "\u2524"
     \
     \                    :    s:get_chars_around(4) =~# "\u2502"
-    \                      && s:get_chars_around(2) ==# "\u2500"
+    \                      && s:get_chars_around(2) is# "\u2500"
     \                         ?    "\u250c"
     \
     \                    :    s:get_chars_around(4) =~# "\u2502"
-    \                      && s:get_chars_around(1) ==# "\u2500"
+    \                      && s:get_chars_around(1) is# "\u2500"
     \                         ?    "\u2510"
     \
     \                    :    s:get_chars_around(3) =~# "\u2502"
-    \                      && s:get_chars_around(2) ==# "\u2500"
+    \                      && s:get_chars_around(2) is# "\u2500"
     \                         ?    "\u2514"
     \
     \                    :    s:get_chars_around(3) =~# "\u2502"
-    \                      && s:get_chars_around(1) ==# "\u2500"
+    \                      && s:get_chars_around(1) is# "\u2500"
     \                         ?    "\u2518"
     \                    :         '+'
     \                }
@@ -358,7 +358,7 @@ endfu
 
 fu! draw#change_state(erasing_mode) abort "{{{1
 
-    if s:state ==# 'disabled'
+    if s:state is# 'disabled'
         let s:ve_save  = &ve
         let s:ww_save  = &ww
         let s:sol_save = &sol
@@ -599,7 +599,7 @@ fu! s:mappings_install() abort "{{{1
 endfu
 
 fu! s:mappings_toggle() abort "{{{1
-    if s:state ==# 'disabled'
+    if s:state is# 'disabled'
         call draw#stop()
 
     else
@@ -637,7 +637,7 @@ fu! s:replace_char(key) abort "{{{1
 
     exe 'norm! r'
     \            .(
-    \                s:state ==# 'erasing'
+    \                s:state is# 'erasing'
     \              ?    ' '
     \              : cchar =~# s:crossing_keys[a:key] && cchar !=# s:key2char[a:key]
     \              ?      s:intersection[a:key]
@@ -717,10 +717,10 @@ fu! draw#stop() abort "{{{1
 endfu
 
 fu! s:unbounded_vertical_motion(motion) abort "{{{1
-    if a:motion ==# 'j' && line('.') == line('$')
+    if a:motion is# 'j' && line('.') == line('$')
         call append('.', repeat(' ', virtcol('.')))
 
-    elseif a:motion ==# 'k' && line('.') == 1
+    elseif a:motion is# 'k' && line('.') == 1
         call append(0, repeat(' ', virtcol('.')))
     endif
 
