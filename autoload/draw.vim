@@ -35,7 +35,7 @@ let g:autoloaded_draw = 1
 
 let s:state = get(s:, 'state', 'disabled')
 
-let s:key2char = {
+let s:KEY2CHAR = {
                  \ '<left>'     : '-',
                  \ '<right>'    : '-',
                  \ '<down>'     : '|',
@@ -50,7 +50,7 @@ let s:key2char = {
                  \ '^'          : '^',
                  \ }
 
-let s:key2motion = {
+let s:KEY2MOTION = {
                    \ '<left>'     : 'h',
                    \ '<right>'    : 'l',
                    \ '<down>'     : 'j',
@@ -69,7 +69,7 @@ let s:key2motion = {
                    \ '<s-up>'     : 'k',
                    \ }
 
-let s:crossing_keys = {
+let s:CROSSING_KEYS = {
                       \ '<left>'     : '[-|+]',
                       \ '<right>'    : '[-|+]',
                       \ '<down>'     : '[-|+]',
@@ -80,7 +80,7 @@ let s:crossing_keys = {
                       \ '<home>'     : '[\/X]',
                       \ }
 
-let s:intersection = {
+let s:INTERSECTION = {
                      \ '<left>'     : '+',
                      \ '<right>'    : '+',
                      \ '<down>'     : '+',
@@ -459,11 +459,11 @@ fu! s:draw(key) abort "{{{1
              \     a:key) !=# -1
 
         call s:replace_char(a:key)
-        exe 'norm! '.s:key2motion[a:key]
+        exe 'norm! '.s:KEY2MOTION[a:key]
         call s:replace_char(a:key)
 
     elseif index(['^', 'v', '<', '>'], a:key) >= 0
-        exe 'norm! r'.s:key2char[a:key].s:key2motion[a:key].'r'.s:key2char[a:key]
+        exe 'norm! r'.s:KEY2CHAR[a:key].s:KEY2MOTION[a:key].'r'.s:KEY2CHAR[a:key]
     endif
 endfu
 
@@ -569,7 +569,7 @@ fu! s:mappings_install() abort "{{{1
                  \ ]
 
         exe printf('nno  %s  %s  :<c-u>call <sid>unbounded_vertical_motion(%s)<cr>',
-        \          args, l:key, string(s:key2motion[l:key]))
+        \          args, l:key, string(s:KEY2MOTION[l:key]))
     endfor
 
     for l:key in [
@@ -639,9 +639,9 @@ fu! s:replace_char(key) abort "{{{1
     \            .(
     \                s:state is# 'erasing'
     \              ?    ' '
-    \              : cchar =~# s:crossing_keys[a:key] && cchar isnot# s:key2char[a:key]
-    \              ?      s:intersection[a:key]
-    \              :      s:key2char[a:key]
+    \              : cchar =~# s:CROSSING_KEYS[a:key] && cchar isnot# s:KEY2CHAR[a:key]
+    \              ?      s:INTERSECTION[a:key]
+    \              :      s:KEY2CHAR[a:key]
     \             )
 endfu
 
