@@ -160,7 +160,9 @@ fu! s:arrow(...) abort "{{{1
     call s:restore_selection(x0, y0, x1, y1)
 
     " trim ending whitespace
-    '<,'>TW
+    if exists(':TW') ==# 2
+        '<,'>TW
+    endif
 endfu
 
 fu! s:arrow_cycle(is_fwd) abort "{{{1
