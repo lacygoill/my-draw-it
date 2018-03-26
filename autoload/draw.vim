@@ -528,12 +528,12 @@ endfu
 
 fu! s:get_chars_around(i) abort "{{{1
     return a:i ==# 1
-    \?         matchstr(getline(line('.')), '\%'.(virtcol('.')-1).'v.')
-    \:     a:i ==# 2
-    \?         matchstr(getline(line('.')), '\%'.virtcol('.').'v.\zs.')
-    \:     a:i ==# 3
-    \?         matchstr(getline(line('.')-1), '\%'.virtcol('.').'v.')
-    \:         matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.')
+       \ ?     matchstr(getline(line('.')), '\%'.(virtcol('.')-1).'v.')
+       \ : a:i ==# 2
+       \ ?     matchstr(getline(line('.')), '\%'.virtcol('.').'v.\zs.')
+       \ : a:i ==# 3
+       \ ?     matchstr(getline(line('.')-1), '\%'.virtcol('.').'v.')
+       \ :     matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.')
 endfu
 
 fu! s:mappings_install() abort "{{{1
@@ -665,14 +665,14 @@ fu! s:segment(coords, ...) abort "{{{1
     let [x0, y0, x1, y1] = point1 + point2
 
     let rchar = a:0
-    \?              ' '
-    \:          x0 ==# x1
-    \?              '|'
-    \:          y0 ==# y1
-    \?              '_'
-    \:          y0 ># y1
-    \?              '/'
-    \:              '\'
+            \ ?     ' '
+            \ : x0 ==# x1
+            \ ?     '|'
+            \ : y0 ==# y1
+            \ ?     '_'
+            \ : y0 ># y1
+            \ ?     '/'
+            \ :     '\'
 
     if x0 ==# x1
         exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr'.rchar
