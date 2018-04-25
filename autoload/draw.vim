@@ -274,52 +274,52 @@ fu! draw#box_prettify(line1, line2) abort "{{{1
     "                                      ┌─ the character below is a plus or a bar
     "                                      │
     let l:Rep_bar = {-> s:get_chars_around(4) =~# '[+|]'
-    \                   ?    "│"
+    \                   ?    '│'
     \                   :    '|'
     \               }
     sil exe range.'s/|/\=l:Rep_bar()/ge'
 
-    let l:Rep_plus = {->      s:get_chars_around(1) =~# "─"
-    \                      && s:get_chars_around(2) is# "─"
-    \                      && s:get_chars_around(3) is# "│"
-    \                      && s:get_chars_around(4) is# "│"
-    \                         ?    "┼"
+    let l:Rep_plus = {->      s:get_chars_around(1) =~# '─'
+    \                      && s:get_chars_around(2) is# '─'
+    \                      && s:get_chars_around(3) is# '│'
+    \                      && s:get_chars_around(4) is# '│'
+    \                         ?    '┼'
     \
-    \                    :    s:get_chars_around(1) =~# "─"
-    \                      && s:get_chars_around(2) is# "─"
-    \                      && s:get_chars_around(4) is# "│"
-    \                         ?    "┬"
+    \                    :    s:get_chars_around(1) =~# '─'
+    \                      && s:get_chars_around(2) is# '─'
+    \                      && s:get_chars_around(4) is# '│'
+    \                         ?    '┬'
     \
-    \                    :    s:get_chars_around(1) =~# "─"
-    \                      && s:get_chars_around(2) is# "─"
-    \                      && s:get_chars_around(3) is# "│"
-    \                         ?    "┴"
+    \                    :    s:get_chars_around(1) =~# '─'
+    \                      && s:get_chars_around(2) is# '─'
+    \                      && s:get_chars_around(3) is# '│'
+    \                         ?    '┴'
     \
-    \                    :    s:get_chars_around(3) =~# "│"
-    \                      && s:get_chars_around(4) is# "│"
-    \                      && s:get_chars_around(2) is# "─"
-    \                         ?    "├"
+    \                    :    s:get_chars_around(3) =~# '│'
+    \                      && s:get_chars_around(4) is# '│'
+    \                      && s:get_chars_around(2) is# '─'
+    \                         ?    '├'
     \
-    \                    :    s:get_chars_around(3) =~# "│"
-    \                      && s:get_chars_around(4) is# "│"
-    \                      && s:get_chars_around(1) is# "─"
-    \                         ?    "┤"
+    \                    :    s:get_chars_around(3) =~# '│'
+    \                      && s:get_chars_around(4) is# '│'
+    \                      && s:get_chars_around(1) is# '─'
+    \                         ?    '┤'
     \
-    \                    :    s:get_chars_around(4) =~# "│"
-    \                      && s:get_chars_around(2) is# "─"
-    \                         ?    "┌"
+    \                    :    s:get_chars_around(4) =~# '│'
+    \                      && s:get_chars_around(2) is# '─'
+    \                         ?    '┌'
     \
-    \                    :    s:get_chars_around(4) =~# "│"
-    \                      && s:get_chars_around(1) is# "─"
-    \                         ?    "┐"
+    \                    :    s:get_chars_around(4) =~# '│'
+    \                      && s:get_chars_around(1) is# '─'
+    \                         ?    '┐'
     \
-    \                    :    s:get_chars_around(3) =~# "│"
-    \                      && s:get_chars_around(2) is# "─"
-    \                         ?    "└"
+    \                    :    s:get_chars_around(3) =~# '│'
+    \                      && s:get_chars_around(2) is# '─'
+    \                         ?    '└'
     \
-    \                    :    s:get_chars_around(3) =~# "│"
-    \                      && s:get_chars_around(1) is# "─"
-    \                         ?    "┘"
+    \                    :    s:get_chars_around(3) =~# '│'
+    \                      && s:get_chars_around(1) is# '─'
+    \                         ?    '┘'
     \                    :         '+'
     \                }
 
