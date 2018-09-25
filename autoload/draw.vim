@@ -334,40 +334,40 @@ fu! draw#change_state(erasing_mode) abort "{{{1
         let s:sol_save = &sol
 
         let s:original_mappings_normal = lg#map#save('n', 0, [
-        \                                                      'm?',
-        \                                                      '<left>',
-        \                                                      '<right>',
-        \                                                      '<down>',
-        \                                                      '<up>',
-        \                                                      '<s-left>',
-        \                                                      '<s-right>',
-        \                                                      '<s-down>',
-        \                                                      '<s-up>',
-        \                                                      '<pagedown>',
-        \                                                      '<pageup>',
-        \                                                      '<end>',
-        \                                                      '<home>',
-        \                                                      '<',
-        \                                                      '>',
-        \                                                      'v',
-        \                                                      '^',
-        \                                                      'H',
-        \                                                      'J',
-        \                                                      'K',
-        \                                                      'L',
-        \                                                      'j',
-        \                                                      'k',
-        \                                                    ])
+            \ 'm?',
+            \ '<left>',
+            \ '<right>',
+            \ '<down>',
+            \ '<up>',
+            \ '<s-left>',
+            \ '<s-right>',
+            \ '<s-down>',
+            \ '<s-up>',
+            \ '<pagedown>',
+            \ '<pageup>',
+            \ '<end>',
+            \ '<home>',
+            \ '<',
+            \ '>',
+            \ 'v',
+            \ '^',
+            \ 'H',
+            \ 'J',
+            \ 'K',
+            \ 'L',
+            \ 'j',
+            \ 'k',
+            \ ])
 
         let s:original_mappings_visual = lg#map#save('x', 0, [
-        \                                                      'j',
-        \                                                      'k',
-        \                                                      'ma',
-        \                                                      'mb',
-        \                                                      'me',
-        \                                                      'mm',
-        \                                                      'mM',
-        \                                                    ])
+            \ 'j',
+            \ 'k',
+            \ 'ma',
+            \ 'mb',
+            \ 'me',
+            \ 'mm',
+            \ 'mM',
+            \ ])
 
         " The 2nd argument passed to `lg#map#save()` is 0. {{{
         " This is very important. It means that we save global mappings.
@@ -417,16 +417,16 @@ fu! s:draw(key) abort "{{{1
     endif
 
     if index([
-             \ '<left>',
-             \ '<right>',
-             \ '<down>',
-             \ '<up>',
-             \ '<pagedown>',
-             \ '<pageup>',
-             \ '<end>',
-             \ '<home>'
-             \ ],
-             \     a:key) !=# -1
+        \ '<left>',
+        \ '<right>',
+        \ '<down>',
+        \ '<up>',
+        \ '<pagedown>',
+        \ '<pageup>',
+        \ '<end>',
+        \ '<home>'
+        \ ],
+        \ a:key) !=# -1
 
         call s:replace_char(a:key)
         exe 'norm! '.s:KEY2MOTION[a:key]
@@ -508,53 +508,53 @@ fu! s:mappings_install() abort "{{{1
     let args = ' <nowait> <silent> '
 
     for l:key in [
-                 \ '<left>',
-                 \ '<right>',
-                 \ '<down>',
-                 \ '<up>',
-                 \ '<pagedown>',
-                 \ '<pageup>',
-                 \ '<home>',
-                 \ '<end>',
-                 \ ]
+        \ '<left>',
+        \ '<right>',
+        \ '<down>',
+        \ '<up>',
+        \ '<pagedown>',
+        \ '<pageup>',
+        \ '<home>',
+        \ '<end>',
+        \ ]
 
         exe printf('nno  %s  %s  :<c-u>call <sid>draw(%s)<cr>', args, l:key, string('<lt>'.l:key[1:]))
     endfor
 
     for l:key in [
-                 \ '<',
-                 \ '>',
-                 \ 'v',
-                 \ '^',
-                 \ ]
+        \ '<',
+        \ '>',
+        \ 'v',
+        \ '^',
+        \ ]
 
         exe printf('nno  %s  %s  :<c-u>call <sid>draw(%s)<cr>', args, l:key, string(l:key))
     endfor
 
     for l:key in [
-                 \ '<s-left>',
-                 \ '<s-right>',
-                 \ '<s-down>',
-                 \ '<s-up>',
-                 \ ]
+        \ '<s-left>',
+        \ '<s-right>',
+        \ '<s-down>',
+        \ '<s-up>',
+        \ ]
 
         exe printf('nno  %s  %s  :<c-u>call <sid>unbounded_vertical_motion(%s)<cr>',
         \          args, l:key, string(s:KEY2MOTION[l:key]))
     endfor
 
     for l:key in [
-                 \ 'H',
-                 \ 'L',
-                 \ ]
+        \ 'H',
+        \ 'L',
+        \ ]
         exe printf('nno  %s  %s  3%s', args, l:key, tolower(l:key))
     endfor
 
     for l:key in [
-                 \ 'j',
-                 \ 'k',
-                 \ 'J',
-                 \ 'K',
-                 \ ]
+        \ 'j',
+        \ 'k',
+        \ 'J',
+        \ 'K',
+        \ ]
         exe printf('nno  %s  %s  :<c-u>call <sid>unbounded_vertical_motion(%s)<cr>',
         \          args, l:key, string(tolower(l:key)))
     endfor
