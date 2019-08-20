@@ -584,7 +584,7 @@ fu! s:mappings_toggle() abort "{{{1
         " unintended results when drawing and reaching column 0.
         set whichwrap-=h
 
-        echo '['.substitute(s:state, '.', '\u&', '').'] '.'enabled'
+        echom '['.substitute(s:state, '.', '\u&', '').'] '.'enabled'
     endif
 endfu
 
@@ -683,7 +683,7 @@ fu! draw#stop() abort "{{{1
     let &ve  = get(s:, 've_save', &ve)
     let &ww  = get(s:, 'ww_save', &ww)
     let &sol = get(s:, 'sol_save', &sol)
-    echo '[Drawing/Erasing] disabled'
+    echom '[Drawing/Erasing] disabled'
 endfu
 
 fu! s:unbounded_vertical_motion(motion) abort "{{{1
