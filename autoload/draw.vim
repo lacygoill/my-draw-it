@@ -274,9 +274,9 @@ fu! draw#box_prettify(line1, line2) abort "{{{1
     "                                      ┌ the character below is a plus or a bar
     "                                      │
     let l:Rep_bar = {-> s:get_chars_around(4) =~# '[+|]'
-    \                   ?    '│'
-    \                   :    '|'
-    \               }
+    \                 ?    '│'
+    \                 :    '|'
+    \ }
     sil exe range.'s/|/\=l:Rep_bar()/ge'
 
     let l:Rep_plus = {->      s:get_chars_around(1) =~# '─'
@@ -507,7 +507,7 @@ endfu
 fu! s:mappings_install() abort "{{{1
     let args = ' <nowait> <silent> '
 
-    for l:key in [
+    for key in [
         \ '<left>',
         \ '<right>',
         \ '<down>',
@@ -518,20 +518,20 @@ fu! s:mappings_install() abort "{{{1
         \ '<end>',
         \ ]
 
-        exe printf('nno  %s  %s  :<c-u>call <sid>draw(%s)<cr>', args, l:key, string('<lt>'.l:key[1:]))
+        exe printf('nno  %s  %s  :<c-u>call <sid>draw(%s)<cr>', args, key, string('<lt>'.key[1:]))
     endfor
 
-    for l:key in [
+    for key in [
         \ '<',
         \ '>',
         \ 'v',
         \ '^',
         \ ]
 
-        exe printf('nno  %s  %s  :<c-u>call <sid>draw(%s)<cr>', args, l:key, string(l:key))
+        exe printf('nno  %s  %s  :<c-u>call <sid>draw(%s)<cr>', args, key, string(key))
     endfor
 
-    for l:key in [
+    for key in [
         \ '<s-left>',
         \ '<s-right>',
         \ '<s-down>',
@@ -539,24 +539,24 @@ fu! s:mappings_install() abort "{{{1
         \ ]
 
         exe printf('nno  %s  %s  :<c-u>call <sid>unbounded_vertical_motion(%s)<cr>',
-        \          args, l:key, string(s:KEY2MOTION[l:key]))
+        \          args, key, string(s:KEY2MOTION[key]))
     endfor
 
-    for l:key in [
+    for key in [
         \ 'H',
         \ 'L',
         \ ]
-        exe printf('nno  %s  %s  3%s', args, l:key, tolower(l:key))
+        exe printf('nno  %s  %s  3%s', args, key, tolower(key))
     endfor
 
-    for l:key in [
+    for key in [
         \ 'j',
         \ 'k',
         \ 'J',
         \ 'K',
         \ ]
         exe printf('nno  %s  %s  :<c-u>call <sid>unbounded_vertical_motion(%s)<cr>',
-        \          args, l:key, string(tolower(l:key)))
+        \          args, key, string(tolower(key)))
     endfor
 
     xno  <nowait><silent>  ma  :<c-u>call <sid>arrow()<cr>
