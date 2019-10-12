@@ -10,4 +10,4 @@ nno  <silent><unique>  m<bar>    :<c-u>call draw#stop()<cr>
 " Usage:
 " Visually select a box whose borders are drawn in ascii-art (- + |),
 " then execute this command. The borders will now use `│─┌┐└┘`.
-com! -bar -range=% BoxPrettify call draw#box_prettify(<line1>,<line2>)
+com -bar -range=% BoxPrettify call draw#box_prettify(<line1>,<line2>)

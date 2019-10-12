@@ -7,7 +7,7 @@ let g:autoloaded_draw = 1
 "
 " - allow moving visual selection beyond first/last line
 
-" data {{{1
+" Init {{{1
 
 " We initialize the state of the plugin to 'disabled'.
 " But only if it hasn't already been initialized.
@@ -35,7 +35,7 @@ let g:autoloaded_draw = 1
 
 let s:state = get(s:, 'state', 'disabled')
 
-let s:KEY2CHAR = {
+const s:KEY2CHAR = {
                  \ '<left>'     : '-',
                  \ '<right>'    : '-',
                  \ '<down>'     : '|',
@@ -50,7 +50,7 @@ let s:KEY2CHAR = {
                  \ '^'          : '^',
                  \ }
 
-let s:KEY2MOTION = {
+const s:KEY2MOTION = {
                    \ '<left>'     : 'h',
                    \ '<right>'    : 'l',
                    \ '<down>'     : 'j',
@@ -69,7 +69,7 @@ let s:KEY2MOTION = {
                    \ '<s-up>'     : 'k',
                    \ }
 
-let s:CROSSING_KEYS = {
+const s:CROSSING_KEYS = {
                       \ '<left>'     : '[-|+]',
                       \ '<right>'    : '[-|+]',
                       \ '<down>'     : '[-|+]',
@@ -80,7 +80,7 @@ let s:CROSSING_KEYS = {
                       \ '<home>'     : '[\/X]',
                       \ }
 
-let s:INTERSECTION = {
+const s:INTERSECTION = {
                      \ '<left>'     : '+',
                      \ '<right>'    : '+',
                      \ '<down>'     : '+',
@@ -91,17 +91,17 @@ let s:INTERSECTION = {
                      \ '<home>'     : 'X',
                      \ }
 
-fu! s:above_first_line(key) abort "{{{1
+fu s:above_first_line(key) abort "{{{1
     return index(['<Up>', '<PageUp>', '<Home>', '^'], a:key) >= 0
             \ && s:state is# 'drawing' && line('.') == 1
 endfu
 
-fu! s:beyond_last_line(key) abort "{{{1
+fu s:beyond_last_line(key) abort "{{{1
     return index(['<down>', '<pagedown>', '<end>', 'v'], a:key) >= 0
             \ && s:state is# 'drawing' && line('.') == line('$')
 endfu
 
-fu! s:arrow(...) abort "{{{1
+fu s:arrow(...) abort "{{{1
 
     " We initialize the coordinates of the beginning and end of the arrow,
     " as well as its tip.
@@ -165,7 +165,7 @@ fu! s:arrow(...) abort "{{{1
     endif
 endfu
 
-fu! s:arrow_cycle(is_fwd) abort "{{{1
+fu s:arrow_cycle(is_fwd) abort "{{{1
     " Why `min()`, `max()`?
     "
     " We could have hit `O` in visual mode, which would have switch the
@@ -213,7 +213,16 @@ fu! s:arrow_cycle(is_fwd) abort "{{{1
 
         " Ex: B>, Cv, A^, …
         let cur_state = keys(cur_arrow)[0].values(cur_arrow)[0]
-        let states    = ['A<', 'A^', 'B^', 'B>', 'C>', 'Cv', 'Dv', 'D<']
+        let states =<< trim END
+            A<
+            A^
+            B^
+            B>
+            C>
+            Cv
+            Dv
+            D<
+        END
         let new_state = states[(index(states, cur_state) + (a:is_fwd ? 1 : -1)) % len(states)]
         let tip       = new_state[1]
 
@@ -246,7 +255,7 @@ fu! s:arrow_cycle(is_fwd) abort "{{{1
     endif
 endfu
 
-fu! s:box() abort "{{{1
+fu s:box() abort "{{{1
     let [x0, x1] = [virtcol("'<"), virtcol("'>")]
     let [y0, y1] = [line("'<"),    line("'>")]
 
@@ -267,7 +276,7 @@ fu! s:box() abort "{{{1
     call s:restore_selection(x0, y0, x1, y1)
 endfu
 
-fu! draw#box_prettify(line1, line2) abort "{{{1
+fu draw#box_prettify(line1, line2) abort "{{{1
     let range = a:line1.','.a:line2
     sil exe range.'s/-\@1<=-\|--\@=/─/ge'
 
@@ -326,7 +335,7 @@ fu! draw#box_prettify(line1, line2) abort "{{{1
     sil exe range.'s/+/\=l:Rep_plus()/ge'
 endfu
 
-fu! draw#change_state(erasing_mode) abort "{{{1
+fu draw#change_state(erasing_mode) abort "{{{1
 
     if s:state is# 'disabled'
         let s:ve_save  = &ve
@@ -408,7 +417,7 @@ fu! draw#change_state(erasing_mode) abort "{{{1
     call s:mappings_toggle()
 endfu
 
-fu! s:draw(key) abort "{{{1
+fu s:draw(key) abort "{{{1
 
     if s:beyond_last_line(a:key)
         call append('.', '')
@@ -416,18 +425,16 @@ fu! s:draw(key) abort "{{{1
         call append(0, '')
     endif
 
-    if index([
-        \ '<left>',
-        \ '<right>',
-        \ '<down>',
-        \ '<up>',
-        \ '<pagedown>',
-        \ '<pageup>',
-        \ '<end>',
-        \ '<home>'
-        \ ],
-        \ a:key) != -1
-
+    let keys =<< trim END
+        <left>
+        <right>
+        <down>
+        <up>
+        <pagedown>
+        <pageup>
+        <end>
+    END
+    if index(keys, a:key) != -1
         call s:replace_char(a:key)
         exe 'norm! '.s:KEY2MOTION[a:key]
         call s:replace_char(a:key)
@@ -437,7 +444,7 @@ fu! s:draw(key) abort "{{{1
     endif
 endfu
 
-fu! s:ellipse() abort "{{{1
+fu s:ellipse() abort "{{{1
     let [x0, x1] = [virtcol("'<"), virtcol("'>")]
     let [y0, y1] = [line("'<"),    line("'>")]
 
@@ -482,7 +489,7 @@ fu! s:ellipse() abort "{{{1
     call s:restore_selection(x0, y0, x1, y1)
 endfu
 
-fu! s:four(x, y, xoff, yoff) abort "{{{1
+fu s:four(x, y, xoff, yoff) abort "{{{1
     let x  = a:xoff + a:x
     let y  = a:yoff + a:y
     let lx = a:xoff - a:x
@@ -494,7 +501,7 @@ fu! s:four(x, y, xoff, yoff) abort "{{{1
     call s:set_char_at('*',  x, by)
 endfu
 
-fu! s:get_chars_around(i) abort "{{{1
+fu s:get_chars_around(i) abort "{{{1
     return a:i == 1
        \ ?     matchstr(getline(line('.')), '\%'.(virtcol('.')-1).'v.')
        \ : a:i == 2
@@ -504,7 +511,7 @@ fu! s:get_chars_around(i) abort "{{{1
        \ :     matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.')
 endfu
 
-fu! s:mappings_install() abort "{{{1
+fu s:mappings_install() abort "{{{1
     let args = ' <nowait> <silent> '
 
     for key in [
@@ -568,7 +575,7 @@ fu! s:mappings_install() abort "{{{1
     nno  <nowait><silent>  m?  :<C-U>call draw_it#stop() <bar> h my-draw-it<cr>
 endfu
 
-fu! s:mappings_toggle() abort "{{{1
+fu s:mappings_toggle() abort "{{{1
     if s:state is# 'disabled'
         call draw#stop()
 
@@ -588,7 +595,7 @@ fu! s:mappings_toggle() abort "{{{1
     endif
 endfu
 
-fu! s:replace_char(key) abort "{{{1
+fu s:replace_char(key) abort "{{{1
 
     " This function is called before and then after a motion (left, up, …).
     " It must return the character to draw.
@@ -615,13 +622,13 @@ fu! s:replace_char(key) abort "{{{1
     \             )
 endfu
 
-fu! s:restore_selection(x0, y0, x1, y1) abort "{{{1
+fu s:restore_selection(x0, y0, x1, y1) abort "{{{1
     call setpos("'>", [0, a:y0, a:x0, 0])
     call setpos("'<", [0, a:y1, a:x1, 0])
     norm! gv
 endfu
 
-fu! s:segment(coords, ...) abort "{{{1
+fu s:segment(coords, ...) abort "{{{1
 " if we pass an optional argument to the function, it will draw spaces,
 " thus erasing a segment instead of drawing it
 
@@ -657,7 +664,7 @@ fu! s:segment(coords, ...) abort "{{{1
     endif
 endfu
 
-fu! s:set_char_at(char, x, y) abort "{{{1
+fu s:set_char_at(char, x, y) abort "{{{1
     " move on line whose address is `y`
     exe a:y
 
@@ -670,7 +677,7 @@ fu! s:set_char_at(char, x, y) abort "{{{1
     endif
 endfu
 
-fu! draw#stop() abort "{{{1
+fu draw#stop() abort "{{{1
     let s:state = 'disabled'
 
     if exists('s:original_mappings_normal')
@@ -686,7 +693,7 @@ fu! draw#stop() abort "{{{1
     echom '[Drawing/Erasing] disabled'
 endfu
 
-fu! s:unbounded_vertical_motion(motion) abort "{{{1
+fu s:unbounded_vertical_motion(motion) abort "{{{1
     if a:motion is# 'j' && line('.') == line('$')
         call append('.', repeat(' ', virtcol('.')))
 
