@@ -214,14 +214,14 @@ fu s:arrow_cycle(is_fwd) abort "{{{1
         " Ex: B>, Cv, A^, …
         let cur_state = keys(cur_arrow)[0].values(cur_arrow)[0]
         let states =<< trim END
-        A<
-        A^
-        B^
-        B>
-        C>
-        Cv
-        Dv
-        D<
+            A<
+            A^
+            B^
+            B>
+            C>
+            Cv
+            Dv
+            D<
         END
         let new_state = states[(index(states, cur_state) + (a:is_fwd ? 1 : -1)) % len(states)]
         let tip       = new_state[1]
@@ -426,13 +426,13 @@ fu s:draw(key) abort "{{{1
     endif
 
     let keys =<< trim END
-    <left>
-    <right>
-    <down>
-    <up>
-    <pagedown>
-    <pageup>
-    <end>
+        <left>
+        <right>
+        <down>
+        <up>
+        <pagedown>
+        <pageup>
+        <end>
     END
     if index(keys, a:key) != -1
         call s:replace_char(a:key)
