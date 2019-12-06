@@ -11,3 +11,11 @@ nno <silent><unique> m<bar>   :<c-u>call draw#stop()<cr>
 " Visually select a box whose borders are drawn in ascii-art (- + |),
 " then execute this command. The borders will now use `│─┌┐└┘`.
 com -bar -range=% BoxPrettify call draw#box_prettify(<line1>,<line2>)
+
+" TODO: Implement a mapping  to select the current box (i.e.  the one around the
+" current cursor position), so that we can move it quickly with `vim-schlepp`.
+
+" TODO: Implement a mapping to select a box around the current paragraph.
+" It  would be  useful to  write some  text *first*,  then press  `m_` to  enter
+" drawing mode, then press our mapping to draw a box around the text.
+
