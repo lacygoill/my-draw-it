@@ -187,11 +187,11 @@ fu s:arrow_cycle(is_fwd) abort "{{{1
     " A B
     " D C
     let corners = {
-    \               'A' : matchstr(getline("'<"), '\v%'.x0.'v.'),
-    \               'B' : matchstr(getline("'<"), '\v%'.x1.'v.'),
-    \               'C' : matchstr(getline("'>"), '\v%'.x1.'v.'),
-    \               'D' : matchstr(getline("'>"), '\v%'.x0.'v.'),
-    \             }
+        \ 'A' : matchstr(getline("'<"), '\%'..x0..'v.'),
+        \ 'B' : matchstr(getline("'<"), '\%'..x1..'v.'),
+        \ 'C' : matchstr(getline("'>"), '\%'..x1..'v.'),
+        \ 'D' : matchstr(getline("'>"), '\%'..x0..'v.'),
+        \ }
 
     let cur_arrow = filter(corners, {_,v -> v =~ '[<>v^]'})
     if empty(cur_arrow)
@@ -200,19 +200,19 @@ fu s:arrow_cycle(is_fwd) abort "{{{1
 
     if y0 == y1
     " horizontal arrow
-        exe 'norm! '.(values(cur_arrow)[0] is# '<' ? x1.'|r>'.x0 : x0.'|r<'.x1).'|r_'
+        exe 'norm! '..(values(cur_arrow)[0] is# '<' ? x1..'|r>'..x0 : x0..'|r<'..x1)..'|r_'
         return
 
     elseif x0 == x1
     " vertical arrow
-        exe 'norm! '.(values(cur_arrow)[0] is# 'v' ? y0.'Gr^'.y1 : y1.'Grv'.y0).'Gr|'
+        exe 'norm! '..(values(cur_arrow)[0] is# 'v' ? y0..'Gr^'..y1 : y1..'Grv'..y0)..'Gr|'
         return
 
     else
     " diagonal arrow
 
         " Ex: B>, Cv, A^, …
-        let cur_state = keys(cur_arrow)[0].values(cur_arrow)[0]
+        let cur_state = keys(cur_arrow)[0]..values(cur_arrow)[0]
         let states =<< trim END
             A<
             A^
@@ -260,12 +260,12 @@ fu s:box() abort "{{{1
     let [y0, y1] = [line("'<"),    line("'>")]
 
     " draw the horizontal sides of the box
-    exe 'norm! '.y0.'G'.x0.'|v'.x1.'|r-'
-    exe 'norm! '.y1.'G'.x0.'|v'.x1.'|r-'
+    exe 'norm! '..y0..'G'..x0..'|v'..x1..'|r-'
+    exe 'norm! '..y1..'G'..x0..'|v'..x1..'|r-'
 
     " draw the vertical sides of the box
-    exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr|'
-    exe 'norm! '.y1.'G'.x1."|\<C-v>".y0.'Gr|'
+    exe 'norm! '..y0..'G'..x0.."|\<C-v>"..y1..'Gr|'
+    exe 'norm! '..y1..'G'..x1.."|\<C-v>"..y0..'Gr|'
 
     " draw the corners of the box
     call s:set_char_at('+', x0, y0)
@@ -277,8 +277,8 @@ fu s:box() abort "{{{1
 endfu
 
 fu draw#box_prettify(line1, line2) abort "{{{1
-    let range = a:line1.','.a:line2
-    sil exe range.'s/-\@1<=-\|--\@=/─/ge'
+    let range = a:line1..','..a:line2
+    sil exe range..'s/-\@1<=-\|--\@=/─/ge'
 
     "                                      ┌ the character below is a plus or a bar
     "                                      │
@@ -286,7 +286,7 @@ fu draw#box_prettify(line1, line2) abort "{{{1
     \                 ?    '│'
     \                 :    '|'
     \ }
-    sil exe range.'s/|/\=l:Rep_bar()/ge'
+    sil exe range..'s/|/\=l:Rep_bar()/ge'
 
     let l:Rep_plus = {->      s:get_chars_around(1) =~# '─'
     \                      && s:get_chars_around(2) is# '─'
@@ -332,7 +332,7 @@ fu draw#box_prettify(line1, line2) abort "{{{1
     \                    :         '+'
     \                }
 
-    sil exe range.'s/+/\=l:Rep_plus()/ge'
+    sil exe range..'s/+/\=l:Rep_plus()/ge'
 endfu
 
 fu draw#change_state(erasing_mode) abort "{{{1
@@ -436,11 +436,11 @@ fu s:draw(key) abort "{{{1
     END
     if index(keys, a:key) != -1
         call s:replace_char(a:key)
-        exe 'norm! '.s:KEY2MOTION[a:key]
+        exe 'norm! '..s:KEY2MOTION[a:key]
         call s:replace_char(a:key)
 
     elseif index(['^', 'v', '<', '>'], a:key) >= 0
-        exe 'norm! r'.s:KEY2CHAR[a:key].s:KEY2MOTION[a:key].'r'.s:KEY2CHAR[a:key]
+        exe 'norm! r'..s:KEY2CHAR[a:key]..s:KEY2MOTION[a:key]..'r'..s:KEY2CHAR[a:key]
     endif
 endfu
 
@@ -503,12 +503,12 @@ endfu
 
 fu s:get_chars_around(i) abort "{{{1
     return a:i == 1
-       \ ?     matchstr(getline(line('.')), '\%'.(virtcol('.')-1).'v.')
+       \ ?     matchstr(getline(line('.')), '\%'..(virtcol('.')-1)..'v.')
        \ : a:i == 2
-       \ ?     matchstr(getline(line('.')), '\%'.virtcol('.').'v.\zs.')
+       \ ?     matchstr(getline(line('.')), '\%'..virtcol('.')..'v.\zs.')
        \ : a:i == 3
-       \ ?     matchstr(getline(line('.')-1), '\%'.virtcol('.').'v.')
-       \ :     matchstr(getline(line('.')+1), '\%'.virtcol('.').'v.')
+       \ ?     matchstr(getline(line('.')-1), '\%'..virtcol('.')..'v.')
+       \ :     matchstr(getline(line('.')+1), '\%'..virtcol('.')..'v.')
 endfu
 
 fu s:mappings_install() abort "{{{1
@@ -525,7 +525,7 @@ fu s:mappings_install() abort "{{{1
         \ '<end>',
         \ ]
 
-        exe printf('nno  %s  %s  :<c-u>call <sid>draw(%s)<cr>', args, key, string('<lt>'.key[1:]))
+        exe printf('nno  %s  %s  :<c-u>call <sid>draw(%s)<cr>', args, key, string('<lt>'..key[1:]))
     endfor
 
     for key in [
@@ -591,7 +591,7 @@ fu s:mappings_toggle() abort "{{{1
         " unintended results when drawing and reaching column 0.
         set whichwrap-=h
 
-        echom '['.substitute(s:state, '.', '\u&', '').'] '.'enabled'
+        echom '['..substitute(s:state, '.', '\u&', '')..'] '..'enabled'
     endif
 endfu
 
@@ -613,13 +613,13 @@ fu s:replace_char(key) abort "{{{1
     let cchar = getline('.')[col('.')-1]
 
     exe 'norm! r'
-    \            .(
-    \                s:state is# 'erasing'
-    \              ?    ' '
-    \              : cchar =~# s:CROSSING_KEYS[a:key] && cchar isnot# s:KEY2CHAR[a:key]
-    \              ?      s:INTERSECTION[a:key]
-    \              :      s:KEY2CHAR[a:key]
-    \             )
+        \ ..(
+        \      s:state is# 'erasing'
+        \    ?    ' '
+        \    : cchar =~# s:CROSSING_KEYS[a:key] && cchar isnot# s:KEY2CHAR[a:key]
+        \    ?      s:INTERSECTION[a:key]
+        \    :      s:KEY2CHAR[a:key]
+        \ )
 endfu
 
 fu s:restore_selection(x0, y0, x1, y1) abort "{{{1
@@ -650,10 +650,10 @@ fu s:segment(coords, ...) abort "{{{1
             \ :     '\'
 
     if x0 == x1
-        exe 'norm! '.y0.'G'.x0."|\<C-v>".y1.'Gr'.rchar
+        exe 'norm! '..y0..'G'..x0.."|\<C-v>"..y1..'Gr'..rchar
 
     elseif y0 == y1
-        exe 'norm! '.y0.'G'.x0."|\<C-v>".x1.'|r'.rchar
+        exe 'norm! '..y0..'G'..x0.."|\<C-v>"..x1..'|r'..rchar
 
     else
         for i in range(x0, x0 + abs(y1 - y0))
@@ -671,9 +671,9 @@ fu s:set_char_at(char, x, y) abort "{{{1
     " move cursor on column `x` and replace the character under the cursor
     " with `char`
     if a:x <= 1
-        exe 'norm! 0r'.a:char
+        exe 'norm! 0r'..a:char
     else
-        exe 'norm! 0'.(a:x-1).'lr'.a:char
+        exe 'norm! 0'..(a:x-1)..'lr'..a:char
     endif
 endfu
 
@@ -701,5 +701,5 @@ fu s:unbounded_vertical_motion(motion) abort "{{{1
         call append(0, repeat(' ', virtcol('.')))
     endif
 
-    exe 'norm! '.a:motion
+    exe 'norm! '..a:motion
 endfu
