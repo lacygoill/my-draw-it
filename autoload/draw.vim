@@ -439,7 +439,7 @@ fu s:draw(key) abort "{{{1
         exe 'norm! '..s:KEY2MOTION[a:key]
         call s:replace_char(a:key)
 
-    elseif index(['^', 'v', '<', '>'], a:key) >= 0
+    elseif a:key =~# "[v^<>]"
         exe 'norm! r'..s:KEY2CHAR[a:key]..s:KEY2MOTION[a:key]..'r'..s:KEY2CHAR[a:key]
     endif
 endfu
