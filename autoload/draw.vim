@@ -336,7 +336,6 @@ fu draw#box_prettify(line1, line2) abort "{{{1
 endfu
 
 fu draw#change_state(erasing_mode) abort "{{{1
-
     if s:state is# 'disabled'
         let s:ve_save  = &ve
         let s:ww_save  = &ww
@@ -409,10 +408,10 @@ fu draw#change_state(erasing_mode) abort "{{{1
     endif
 
     let s:state = {
-                       \ 'disabled' : a:erasing_mode ? 'erasing'  : 'drawing' ,
-                       \ 'drawing'  : a:erasing_mode ? 'erasing'  : 'disabled',
-                       \ 'erasing'  : a:erasing_mode ? 'disabled' : 'drawing' ,
-                       \ }[s:state]
+        \ 'disabled' : a:erasing_mode ? 'erasing'  : 'drawing' ,
+        \ 'drawing'  : a:erasing_mode ? 'erasing'  : 'disabled',
+        \ 'erasing'  : a:erasing_mode ? 'disabled' : 'drawing' ,
+        \ }[s:state]
 
     call s:mappings_toggle()
 endfu
