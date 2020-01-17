@@ -278,7 +278,7 @@ endfu
 
 fu draw#box_prettify(line1, line2) abort "{{{1
     let range = a:line1..','..a:line2
-    sil exe range..'s/-\@1<=-\|--\@=/─/ge'
+    sil exe range..'s/-\@1<=-\|-\ze-/─/ge'
 
     "                                      ┌ the character below is a plus or a bar
     "                                      │
