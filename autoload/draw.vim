@@ -3,9 +3,7 @@ if exists('g:autoloaded_draw')
 endif
 let g:autoloaded_draw = 1
 
-" TODO:
-"
-" - allow moving visual selection beyond first/last line
+" TODO: allow moving visual selection beyond first/last line
 
 " Init {{{1
 
@@ -14,7 +12,7 @@ let g:autoloaded_draw = 1
 " Why?
 " Because if we edit the code, while the drawing mappings are installed, and
 " source it, then the next time we will toggle the state of the plugin with
-" `m_`, `m<space>`, `draw_it#change_state()` will save the drawing mappings in
+" `m_`, `m<space>`, `draw#change_state()` will save the drawing mappings in
 " `s:original_mappings_{normal|visual}`. From then, we won't be able to remove
 " the mappings with `m|`, because the plugin will consider them as default.
 "
@@ -341,7 +339,7 @@ fu draw#change_state(erasing_mode) abort "{{{1
         let s:ww_save  = &ww
         let s:sol_save = &sol
 
-        let s:original_mappings_normal = lg#map#save('n', 0, [
+        let s:original_mappings_normal = lg#map#save([
             \ 'm?',
             \ '<left>',
             \ '<right>',
@@ -365,9 +363,9 @@ fu draw#change_state(erasing_mode) abort "{{{1
             \ 'L',
             \ 'j',
             \ 'k',
-            \ ])
+            \ ], 'n')
 
-        let s:original_mappings_visual = lg#map#save('x', 0, [
+        let s:original_mappings_visual = lg#map#save([
             \ 'j',
             \ 'k',
             \ 'ma',
@@ -375,36 +373,34 @@ fu draw#change_state(erasing_mode) abort "{{{1
             \ 'me',
             \ 'mm',
             \ 'mM',
-            \ ])
+            \ ], 'x')
 
-        " The 2nd argument passed to `lg#map#save()` is 0. {{{
-        " This is very important. It means that we save global mappings.
-        " We aren't interested in buffer-local ones.
-        " Why?
-        " It would be difficult to restore them, we would need to first restore
-        " the focus to the buffer where they were initially saved.
-        " And they could only be used in the current buffer, not in others.
+        " What if we have buffer-local mappings?  Will they be saved & restored? {{{
+        "
+        " No.  We only save global mappings.
+        "
+        " It would be difficult to  restore buffer-local mappings; we would need
+        " to first  restore the focus  to the  buffer where they  were initially
+        " saved.
         "
         " I prefer to not bother.
-        " If the user mapped the keys locally, our global mapping will work
-        " everywhere except in the current buffer and buffers where they
+        " If the user  mapped these keys locally, our global  mappings will work
+        " everywhere  except  in  the  current buffer  and  buffers  where  they
         " installed similar buffer-local mappings.
         "
-        " Trying to support this case would create too much complexity.
-        " We would need to override the buffer-local mappings from the user in
-        " every buffer where they exist. It would probably require an autocmd,
+        " Trying  to support  this case  would create  too much  complexity.  We
+        " would  need to  override the  buffer-local mappings  from the  user in
+        " every buffer where they exist.   It would probably require an autocmd,
         " watching some event, like `BufEnter,BufNewFile`.
-        " It would have to check whether the user did install a buffer-local
-        " mapping using the keys we're interested in, and in that case,
-        " save the info about the mapping as well as the position of the buffer
-        " in the buffer list.
+        " It would  have to check  whether the  user did install  a buffer-local
+        " mapping using the keys we're interested in, and in that case, save the
+        " info about the  mapping as well as  the position of the  buffer in the
+        " buffer list.
         "
         " Once the user stops drawing, we would then need to parse all this
         " info, to give the focus to various buffers and restore the mappings
-        " in them.
-        " Then, we would need to restore the layout… FUBAR
-        "
-        " }}}
+        " in them.  Then, we would need to restore the layout...
+        "}}}
     endif
 
     let s:state = {
@@ -447,10 +443,10 @@ fu s:ellipse() abort "{{{1
     let [x0, x1] = [virtcol("'<"), virtcol("'>")]
     let [y0, y1] = [line("'<"),    line("'>")]
 
-    let xoff  = (x0+x1)/2
-    let yoff  = (y0+y1)/2
-    let a     = abs(x1-x0)/2
-    let b     = abs(y1-y0)/2
+    let xoff = (x0+x1)/2
+    let yoff = (y0+y1)/2
+    let a = abs(x1-x0)/2
+    let b = abs(y1-y0)/2
 
     let xi = 0
     let yi = b
@@ -489,8 +485,8 @@ fu s:ellipse() abort "{{{1
 endfu
 
 fu s:four(x, y, xoff, yoff) abort "{{{1
-    let x  = a:xoff + a:x
-    let y  = a:yoff + a:y
+    let x = a:xoff + a:x
+    let y = a:yoff + a:y
     let lx = a:xoff - a:x
     let by = a:yoff - a:y
 
@@ -571,7 +567,7 @@ fu s:mappings_install() abort "{{{1
     xno <nowait><silent> mm :<c-u>call <sid>arrow_cycle(1)<cr>
     xno <nowait><silent> mM :<c-u>call <sid>arrow_cycle(0)<cr>
 
-    nno <nowait><silent> m? :<C-U>call draw_it#stop() <bar> h my-draw-it<cr>
+    nno <nowait><silent> m? :<C-U>call draw#stop() <bar> h my-draw-it<cr>
 endfu
 
 fu s:mappings_toggle() abort "{{{1
@@ -686,8 +682,8 @@ fu draw#stop() abort "{{{1
         call lg#map#restore(s:original_mappings_visual)
     endif
 
-    let &ve  = get(s:, 've_save', &ve)
-    let &ww  = get(s:, 'ww_save', &ww)
+    let &ve = get(s:, 've_save', &ve)
+    let &ww = get(s:, 'ww_save', &ww)
     let &sol = get(s:, 'sol_save', &sol)
     echom '[Drawing/Erasing] disabled'
 endfu
@@ -702,3 +698,4 @@ fu s:unbounded_vertical_motion(motion) abort "{{{1
 
     exe 'norm! '..a:motion
 endfu
+
