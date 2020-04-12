@@ -379,27 +379,25 @@ fu draw#change_state(erasing_mode) abort "{{{1
         "
         " No.  We only save global mappings.
         "
-        " It would be difficult to  restore buffer-local mappings; we would need
-        " to first  restore the focus  to the  buffer where they  were initially
-        " saved.
-        "
-        " I prefer to not bother.
         " If the user  mapped these keys locally, our global  mappings will work
         " everywhere  except  in  the  current buffer  and  buffers  where  they
         " installed similar buffer-local mappings.
         "
-        " Trying  to support  this case  would create  too much  complexity.  We
-        " would  need to  override the  buffer-local mappings  from the  user in
-        " every buffer where they exist.   It would probably require an autocmd,
-        " watching some event, like `BufEnter,BufNewFile`.
-        " It would  have to check  whether the  user did install  a buffer-local
-        " mapping using the keys we're interested in, and in that case, save the
-        " info about the  mapping as well as  the position of the  buffer in the
-        " buffer list.
+        " It would be difficult to restore buffer-local mappings; we would need to:
         "
-        " Once the user stops drawing, we would then need to parse all this
-        " info, to give the focus to various buffers and restore the mappings
-        " in them.  Then, we would need to restore the layout...
+        "    - remove the buffer-local mappings from the user in every buffer where they exist
+        "
+        "    - parse all this info – once the user stops drawing – to focus various buffers
+        "      and restore the mappings in them
+        "
+        "    - restore the original layout (because focusing various buffers may have changed it)
+        "
+        " Right now, I prefer to not bother.
+        "
+        " In the future, if that bothers you, as a partial workaround, you could
+        " simply remove the local mappings in the current buffer.
+        " It would make sure you can at least draw in the latter.
+        " Once you're finished, you could try to restore the original local mappings.
         "}}}
     endif
 
