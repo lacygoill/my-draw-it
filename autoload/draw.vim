@@ -244,14 +244,14 @@ fu s:arrow_cycle(is_fwd) abort "{{{1
         let point1 = state2coords[cur_state]['beg']
         let point2 = state2coords[cur_state]['end']
         let point3 = state2coords[cur_state]['break']
-        call s:segment(copy(point1)->extend(point3), 1)
-        call s:segment(copy(point3)->extend(point2), 1)
+        call copy(point1)->extend(point3)->s:segment(1)
+        call copy(point3)->extend(point2)->s:segment(1)
 
         " we draw a new one
         let point1 = state2coords[new_state]['beg']
         let point2 = state2coords[new_state]['end']
         let point3 = state2coords[new_state]['break']
-        call s:arrow(copy(point1)->extend(point2)->extend(point3), tip)
+        call copy(point1)->extend(point2)->extend(point3)->s:arrow(tip)
     endif
 endfu
 
