@@ -286,7 +286,7 @@ fu draw#box_prettify(line1, line2) abort "{{{1
         \          ?    '│'
         \          :    '|'
         \ }
-    sil exe range .. 's/|/\=l:Rep_bar()/ge'
+    sil exe range .. 's/|/\=Rep_bar()/ge'
 
     let l:Rep_plus = {-> s:get_chars_around(1) =~# '─'
         \             && s:get_chars_around(2) is# '─'
@@ -332,7 +332,7 @@ fu draw#box_prettify(line1, line2) abort "{{{1
         \           :         '+'
         \ }
 
-    sil exe range .. 's/+/\=l:Rep_plus()/ge'
+    sil exe range .. 's/+/\=Rep_plus()/ge'
 endfu
 
 fu draw#change_state(erasing_mode) abort "{{{1
