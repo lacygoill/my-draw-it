@@ -507,7 +507,7 @@ fu s:get_chars_around(i) abort "{{{1
 endfu
 
 fu s:mappings_install() abort "{{{1
-    let args = ' <nowait> <silent> '
+    let args = ' <nowait> '
 
     for key in [
         \ '<left>',
@@ -520,7 +520,7 @@ fu s:mappings_install() abort "{{{1
         \ '<end>',
         \ ]
 
-        exe printf('nno %s %s :<c-u>call <sid>draw(%s)<cr>', args, key, string('<lt>' .. key[1:]))
+        exe printf('nno %s %s <cmd>call <sid>draw(%s)<cr>', args, key, string('<lt>' .. key[1:]))
     endfor
 
     for key in [
@@ -530,7 +530,7 @@ fu s:mappings_install() abort "{{{1
         \ '^',
         \ ]
 
-        exe printf('nno %s %s :<c-u>call <sid>draw(%s)<cr>', args, key, string(key))
+        exe printf('nno %s %s <cmd>call <sid>draw(%s)<cr>', args, key, string(key))
     endfor
 
     for key in [
@@ -540,7 +540,7 @@ fu s:mappings_install() abort "{{{1
         \ '<s-up>',
         \ ]
 
-        exe printf('nno %s %s :<c-u>call <sid>unbounded_vertical_motion(%s)<cr>',
+        exe printf('nno %s %s <cmd>call <sid>unbounded_vertical_motion(%s)<cr>',
         \          args, key, string(s:KEY2MOTION[key]))
     endfor
 
@@ -548,7 +548,7 @@ fu s:mappings_install() abort "{{{1
         \ 'H',
         \ 'L',
         \ ]
-        exe printf('nno  %s  %s  3%s', args, key, tolower(key))
+        exe printf('nno %s %s 3%s', args, key, tolower(key))
     endfor
 
     for key in [
@@ -557,17 +557,17 @@ fu s:mappings_install() abort "{{{1
         \ 'J',
         \ 'K',
         \ ]
-        exe printf('nno %s %s :<c-u>call <sid>unbounded_vertical_motion(%s)<cr>',
+        exe printf('nno %s %s <cmd>call <sid>unbounded_vertical_motion(%s)<cr>',
         \          args, key, tolower(key)->string())
     endfor
 
-    xno <nowait><silent> ma :<c-u>call <sid>arrow()<cr>
-    xno <nowait><silent> mb :<c-u>call <sid>box()<cr>
-    xno <nowait><silent> me :<c-u>call <sid>ellipse()<cr>
-    xno <nowait><silent> mm :<c-u>call <sid>arrow_cycle(1)<cr>
-    xno <nowait><silent> mM :<c-u>call <sid>arrow_cycle(0)<cr>
+    xno <nowait> ma <c-\><c-n><cmd>call <sid>arrow()<cr>
+    xno <nowait> mb <c-\><c-n><cmd>call <sid>box()<cr>
+    xno <nowait> me <c-\><c-n><cmd>call <sid>ellipse()<cr>
+    xno <nowait> mm <c-\><c-n><cmd>call <sid>arrow_cycle(1)<cr>
+    xno <nowait> mM <c-\><c-n><cmd>call <sid>arrow_cycle(0)<cr>
 
-    nno <nowait><silent> m? :<C-U>call draw#stop() <bar> h my-draw-it<cr>
+    nno <nowait> m? <cmd>call draw#stop() <bar> h my-draw-it<cr>
 endfu
 
 fu s:mappings_toggle() abort "{{{1

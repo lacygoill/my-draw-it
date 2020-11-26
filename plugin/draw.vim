@@ -3,9 +3,9 @@ if exists('g:loaded_draw')
 endif
 let g:loaded_draw = 1
 
-nno <silent><unique> m_ :<c-u>call draw#change_state(0)<cr>
-nno <silent><unique> m<space> :<c-u>call draw#change_state(1)<cr>
-nno <silent><unique> m<bar> :<c-u>call draw#stop()<cr>
+nno <unique> m_ <cmd>call draw#change_state(0)<cr>
+nno <unique> m<space> <cmd>call draw#change_state(1)<cr>
+nno <unique> m<bar> <cmd>call draw#stop()<cr>
 
 " Usage:
 " Visually select a box whose borders are drawn in ascii-art (- + |),
