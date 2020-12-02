@@ -13,7 +13,7 @@ nno <unique> m<bar> <cmd>call draw#stop()<cr>
 com -bar -range=% BoxPrettify call draw#box_prettify(<line1>,<line2>)
 
 " TODO: Implement a mapping  to select the current box (i.e.  the one around the
-" current cursor position), so that we can move it quickly with `vim-schlepp`.
+" current cursor position), so that we can move it quickly with `vim-movesel`.
 
 " TODO: Implement a mapping to select a box around the current paragraph.
 " It  would be  useful to  write some  text *first*,  then press  `m_` to  enter
