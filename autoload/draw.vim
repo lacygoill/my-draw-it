@@ -520,7 +520,7 @@ fu s:mappings_install() abort "{{{1
         \ '<end>',
         \ ]
 
-        exe printf('nno %s %s <cmd>call <sid>draw(%s)<cr>', args, key, string('<lt>' .. key[1:]))
+        exe printf('nno %s %s <cmd>call <sid>draw(%s)<cr>', args, key, string('<lt>' .. key[1 :]))
     endfor
 
     for key in [
