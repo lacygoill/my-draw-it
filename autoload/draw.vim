@@ -471,7 +471,7 @@ def Draw(key: string) #{{{2
         <pageup>
         <end>
     END
-    if index(keys, key) != -1
+    if index(keys, key) >= 0
         ReplaceChar(key)
         exe 'norm! ' .. KEY2MOTION[key]
         ReplaceChar(key)
