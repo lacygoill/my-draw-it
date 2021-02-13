@@ -644,7 +644,7 @@ def ReplaceChar(key: string) #{{{2
 # This  way, we  don't have  to pass  a 2nd  argument to  know when  it's called
 # (before or after a motion).
 
-    var cchar: string = getline('.')[col('.') - 1]
+    var cchar: string = getline('.')->strpart(col('.') - 1)[0]
 
     exe 'norm! r'
         .. (state == 'erasing'
