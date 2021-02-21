@@ -7,7 +7,10 @@ var loaded = true
 
 # Init {{{1
 
-import {MapSave, MapRestore} from 'lg/map.vim'
+import {
+    MapSave,
+    MapRestore,
+    } from 'lg/map.vim'
 
 # We initialize the state of the plugin to 'disabled'.
 # But only if it hasn't already been initialized.
@@ -361,7 +364,8 @@ def ArrowCycle(is_fwd: bool) #{{{2
         D: getline("'>")->matchstr('\%' .. x0 .. 'v.'),
         }
 
-    var cur_arrow: dict<string> = filter(corners, (_, v) => v =~ '[<>v^]')
+    var cur_arrow: dict<string> = corners
+        ->filter((_, v: string): bool => v =~ '[<>v^]')
     if empty(cur_arrow)
         return
     endif
@@ -675,7 +679,8 @@ def Segment(coords: list<number>, erase = false) #{{{2
     # on the left, and the last ones the point on the right
     var point1: list<number>
     var point2: list<number>
-    [point1, point2] = sort([[x0, y0], [x1, y1]], (a, b) => a[0] - b[0])
+    [point1, point2] = [[x0, y0], [x1, y1]]
+        ->sort((a: list<number>, b: list<number>): number => a[0] - b[0])
     [x0, y0, x1, y1] = point1 + point2
 
     var rchar: string = erase
