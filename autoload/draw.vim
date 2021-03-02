@@ -99,13 +99,12 @@ def draw#boxPrettify(line1: number, line2: number) #{{{2
     var range: string = ':' .. line1 .. ',' .. line2
     sil exe range .. 's/-\@1<=-\|-\ze-/─/ge'
 
-    var Rep_bar: func = (): string =>
-        #              ┌ the character below is a plus or a bar
-        #              │
-        GetCharsAround(4) =~ '[+|]' ? '│' : '|'
-    sil exe range .. 's/|/\=Rep_bar()/ge'
+    #                                     ┌ the character below is a plus or a bar
+    #                                     │
+    RepBar = (): string => GetCharsAround(4) =~ '[+|]' ? '│' : '|'
+    sil exe range .. 's/|/\=RepBar()/ge'
 
-    var Rep_plus: func = (): string =>
+    RepPlus = (): string =>
         GetCharsAround(1) =~ '─'
      && GetCharsAround(2) == '─'
      && GetCharsAround(3) == '│'
@@ -149,8 +148,11 @@ def draw#boxPrettify(line1: number, line2: number) #{{{2
         ?    '┘'
    :         '+'
 
-    sil exe range .. 's/+/\=Rep_plus()/ge'
+    sil exe range .. 's/+/\=RepPlus()/ge'
 enddef
+
+var RepBar: func
+var RepPlus: func
 
 def draw#changeState(erasing_mode: bool) #{{{2
     if state == 'disabled'
@@ -631,7 +633,7 @@ def MappingsToggle() #{{{2
         # unintended results when drawing and reaching column 0.
         set whichwrap-=h
 
-        echom '[' .. substitute(state, '.', '\u&', '') .. '] ' .. 'enabled'
+        echom '[' .. state->substitute('.', '\u&', '') .. '] ' .. 'enabled'
     endif
 enddef
 
