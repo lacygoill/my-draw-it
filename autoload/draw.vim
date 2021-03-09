@@ -332,7 +332,7 @@ def Arrow(coords: list<number> = [], arg_tip = '') #{{{2
 
     # trim ending whitespace
     if exists(':TW') == 2
-        :'<,'>TW
+        :*TW
     endif
 enddef
 
@@ -548,12 +548,12 @@ enddef
 
 def GetCharsAround(i: number): string #{{{2
     return i == 1
-        ?     getline('.')->matchstr('\%' .. (virtcol('.') - 1) .. 'v.')
+        ?     getline('.')->strpart(0, col('.') - 1)[-1]
         : i == 2
-        ?     getline('.')->matchstr('\%' .. virtcol('.') .. 'v.\zs.')
+        ?     getline('.')->strpart(col('.') - 1)[1]
         : i == 3
-        ?     (line('.') - 1)->getline()->matchstr('\%' .. virtcol('.') .. 'v.')
-        :     (line('.') + 1)->getline()->matchstr('\%' .. virtcol('.') .. 'v.')
+        ?     (line('.') - 1)->getline()->strpart(col('.') - 1)[0]
+        :     (line('.') + 1)->getline()->strpart(col('.') - 1)[0]
 enddef
 
 def MappingsInstall() #{{{2
