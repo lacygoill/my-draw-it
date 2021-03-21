@@ -12,6 +12,8 @@ import {
     MapRestore,
     } from 'lg/map.vim'
 
+import VirtcolFirstCell from 'lg.vim'
+
 # We initialize the state of the plugin to 'disabled'.
 # But only if it hasn't already been initialized.
 # Why?
@@ -547,13 +549,17 @@ def Four(arg_x: number, arg_y: number, xoff: number, yoff: number) #{{{2
 enddef
 
 def GetCharsAround(i: number): string #{{{2
+    # character before
     return i == 1
         ?     getline('.')->strpart(0, col('.') - 1)[-1]
+        # character after
         : i == 2
-        ?     getline('.')->strpart(col('.') - 1)[1]
+        ?     getline('.')[charcol('.')]
         : i == 3
-        ?     (line('.') - 1)->getline()->strpart(col('.') - 1)[0]
-        :     (line('.') + 1)->getline()->strpart(col('.') - 1)[0]
+        # character above
+        ?     (line('.') - 1)->getline()->matchstr('\%' .. VirtcolFirstCell('.') .. 'v.')
+        # character below
+        :     (line('.') + 1)->getline()->matchstr('\%' .. VirtcolFirstCell('.') .. 'v.')
 enddef
 
 def MappingsInstall() #{{{2
@@ -650,7 +656,7 @@ def ReplaceChar(key: string) #{{{2
 # This  way, we  don't have  to pass  a 2nd  argument to  know when  it's called
 # (before or after a motion).
 
-    var cchar: string = getline('.')->strpart(col('.') - 1)[0]
+    var cchar: string = getline('.')[charcol('.') - 1]
 
     exe 'norm! r'
         .. (state == 'erasing'
