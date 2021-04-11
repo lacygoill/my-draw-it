@@ -10,9 +10,7 @@ var loaded = true
 import {
     MapSave,
     MapRestore,
-    } from 'lg/map.vim'
-
-import VirtcolFirstCell from 'lg.vim'
+} from 'lg/map.vim'
 
 # We initialize the state of the plugin to 'disabled'.
 # But only if it hasn't already been initialized.
@@ -53,7 +51,7 @@ const KEY2CHAR: dict<string> = {
     '>': '>',
     'v': 'v',
     '^': '^',
-    }
+}
 
 const KEY2MOTION: dict<string> = {
     '<left>': 'h',
@@ -72,7 +70,7 @@ const KEY2MOTION: dict<string> = {
     '<s-right>': 'l',
     '<s-down>': 'j',
     '<s-up>': 'k',
-    }
+}
 
 const CROSSING_KEYS: dict<string> = {
     '<left>': '[-|+]',
@@ -83,7 +81,7 @@ const CROSSING_KEYS: dict<string> = {
     '<pageup>': '[\/X]',
     '<end>': '[\/X]',
     '<home>': '[\/X]',
-    }
+}
 
 const INTERSECTION: dict<string> = {
     '<left>': '+',
@@ -94,59 +92,57 @@ const INTERSECTION: dict<string> = {
     '<pageup>': 'X',
     '<end>': 'X',
     '<home>': 'X',
-    }
+}
 
 # Interface {{{1
 def draw#boxPrettify(line1: number, line2: number) #{{{2
     var range: string = ':' .. line1 .. ',' .. line2
     sil exe range .. 's/-\@1<=-\|-\ze-/─/ge'
 
-    #                                     ┌ the character below is a plus or a bar
-    #                                     │
-    RepBar = (): string => GetCharsAround(4) =~ '[+|]' ? '│' : '|'
+    RepBar = (): string => GetCharsAround('below') =~ '[+|]' ? '│' : '|'
     sil exe range .. 's/|/\=RepBar()/ge'
 
     RepPlus = (): string =>
-        GetCharsAround(1) =~ '─'
-     && GetCharsAround(2) == '─'
-     && GetCharsAround(3) == '│'
-     && GetCharsAround(4) == '│'
+        GetCharsAround('before') =~ '─'
+     && GetCharsAround('after') == '─'
+     && GetCharsAround('above') == '│'
+     && GetCharsAround('below') == '│'
         ?    '┼'
 
-   :    GetCharsAround(1) =~ '─'
-     && GetCharsAround(2) == '─'
-     && GetCharsAround(4) == '│'
+   :    GetCharsAround('before') =~ '─'
+     && GetCharsAround('after') == '─'
+     && GetCharsAround('below') == '│'
         ?    '┬'
 
-   :    GetCharsAround(1) =~ '─'
-     && GetCharsAround(2) == '─'
-     && GetCharsAround(3) == '│'
+   :    GetCharsAround('before') =~ '─'
+     && GetCharsAround('after') == '─'
+     && GetCharsAround('above') == '│'
         ?    '┴'
 
-   :    GetCharsAround(3) =~ '│'
-     && GetCharsAround(4) == '│'
-     && GetCharsAround(2) == '─'
+   :    GetCharsAround('above') =~ '│'
+     && GetCharsAround('below') == '│'
+     && GetCharsAround('after') == '─'
         ?    '├'
 
-   :    GetCharsAround(3) =~ '│'
-     && GetCharsAround(4) == '│'
-     && GetCharsAround(1) == '─'
+   :    GetCharsAround('above') =~ '│'
+     && GetCharsAround('below') == '│'
+     && GetCharsAround('before') == '─'
         ?    '┤'
 
-   :    GetCharsAround(4) =~ '│'
-     && GetCharsAround(2) == '─'
+   :    GetCharsAround('below') =~ '│'
+     && GetCharsAround('after') == '─'
         ?    '┌'
 
-   :    GetCharsAround(4) =~ '│'
-     && GetCharsAround(1) == '─'
+   :    GetCharsAround('below') =~ '│'
+     && GetCharsAround('before') == '─'
         ?    '┐'
 
-   :    GetCharsAround(3) =~ '│'
-     && GetCharsAround(2) == '─'
+   :    GetCharsAround('above') =~ '│'
+     && GetCharsAround('after') == '─'
         ?    '└'
 
-   :    GetCharsAround(3) =~ '│'
-     && GetCharsAround(1) == '─'
+   :    GetCharsAround('above') =~ '│'
+     && GetCharsAround('before') == '─'
         ?    '┘'
    :         '+'
 
@@ -305,6 +301,8 @@ def Arrow(coords: list<number> = [], arg_tip = '') #{{{2
         tip = x0 < x1 ? '>' : '<'
     endif
 
+    var visual_marks_pos = [getpos("'<"), getpos("'>")]
+
     if x0 == x1 || y0 == y1
     # vertical/horizontal arrow
         Segment([x0, y0, x1, y1])
@@ -330,7 +328,7 @@ def Arrow(coords: list<number> = [], arg_tip = '') #{{{2
         SetCharAt(tip, x1, y1)
     endif
 
-    RestoreSelection(x0, y0, x1, y1)
+    RestoreSelection(visual_marks_pos)
 
     # trim ending whitespace
     if exists(':TW') == 2
@@ -354,9 +352,9 @@ def ArrowCycle(is_fwd: bool) #{{{2
     # the upper-left corner, while (x1, y1) are the coordinates of the
     # bottom-right corner.
 
-    var x0: number = min([virtcol("'<"), virtcol("'>")])
+    var x0: number = min([VirtcolFirstCell("'<"), VirtcolFirstCell("'>")])
+    var x1: number = max([VirtcolFirstCell("'<"), VirtcolFirstCell("'>")])
     var y0: number = min([line("'<"), line("'>")])
-    var x1: number = max([virtcol("'<"), virtcol("'>")])
     var y1: number = max([line("'<"), line("'>")])
 
     # A B
@@ -366,7 +364,7 @@ def ArrowCycle(is_fwd: bool) #{{{2
         B: getline("'<")->matchstr('\%' .. x1 .. 'v.'),
         C: getline("'>")->matchstr('\%' .. x1 .. 'v.'),
         D: getline("'>")->matchstr('\%' .. x0 .. 'v.'),
-        }
+    }
 
     var cur_arrow: dict<string> = corners
         ->filter((_, v: string): bool => v =~ '[<>v^]')
@@ -407,7 +405,7 @@ def ArrowCycle(is_fwd: bool) #{{{2
         END
         var new_state: string = states[
             (index(states, cur_state) + (is_fwd ? 1 : -1)) % len(states)
-            ]
+        ]
         var tip: string = new_state[1]
 
         var height: number = abs(y1 - y0)
@@ -423,7 +421,7 @@ def ArrowCycle(is_fwd: bool) #{{{2
             'Cv': {beg: [x0, y0], end: [x1, y1], break: [x1 - offset, y0]},
             'Dv': {beg: [x1, y0], end: [x0, y1], break: [x0 + offset, y0]},
             'D<': {beg: [x1, y0], end: [x0, y1], break: [x1 - offset, y1]},
-            }
+        }
 
         # we erase the current arrow
         var point1: list<number> = state2coords[cur_state]['beg']
@@ -446,6 +444,8 @@ def Box() #{{{2
     var y0: number = line("'<")
     var y1: number = line("'>")
 
+    var visual_marks_pos = [getpos("'<"), getpos("'>")]
+
     # draw the horizontal sides of the box
     exe 'norm! ' .. y0 .. 'G' .. x0 .. '|v' .. x1 .. '|r-'
     exe 'norm! ' .. y1 .. 'G' .. x0 .. '|v' .. x1 .. '|r-'
@@ -460,7 +460,7 @@ def Box() #{{{2
     SetCharAt('+', x1, y0)
     SetCharAt('+', x1, y1)
 
-    RestoreSelection(x0, y0, x1, y1)
+    RestoreSelection(visual_marks_pos)
 enddef
 
 def Draw(key: string) #{{{2
@@ -500,6 +500,8 @@ def Ellipse() #{{{2
     var a: number = abs(x1 - x0) / 2
     var b: number = abs(y1 - y0) / 2
 
+    var visual_marks_pos = [getpos("'<"), getpos("'>")]
+
     var xi: number = 0
     var yi: number = b
     var ei: number = 0
@@ -533,10 +535,15 @@ def Ellipse() #{{{2
         Four(xi, yi, xoff, yoff)
     endwhile
 
-    RestoreSelection(x0, y0, x1, y1)
+    RestoreSelection(visual_marks_pos)
 enddef
 
-def Four(arg_x: number, arg_y: number, xoff: number, yoff: number) #{{{2
+def Four( #{{{2
+    arg_x: number,
+    arg_y: number,
+    xoff: number,
+    yoff: number
+)
     var x: number = xoff + arg_x
     var y: number = yoff + arg_y
     var lx: number = xoff - arg_x
@@ -548,15 +555,13 @@ def Four(arg_x: number, arg_y: number, xoff: number, yoff: number) #{{{2
     SetCharAt('*', x, by)
 enddef
 
-def GetCharsAround(i: number): string #{{{2
-    # character before
-    return i == 1
-        ?     getline('.')->strpart(0, col('.') - 1)[-1]
-        # character after
-        : i == 2
-        ?     getline('.')[charcol('.')]
-        : i == 3
-        # character above
+def GetCharsAround(where: string): string #{{{2
+    var charcol: number = charcol('.')
+    return where == 'before'
+        ?     (charcol == 1 ? '' : getline('.')[charcol - 2])
+        : where == 'after'
+        ?     getline('.')[charcol]
+        : where == 'above'
         ?     (line('.') - 1)->getline()->matchstr('\%' .. VirtcolFirstCell('.') .. 'v.')
         # character below
         :     (line('.') + 1)->getline()->matchstr('\%' .. VirtcolFirstCell('.') .. 'v.')
@@ -574,7 +579,7 @@ def MappingsInstall() #{{{2
         '<pageup>',
         '<home>',
         '<end>',
-        ]
+    ]
 
         exe printf('nno %s %s <cmd>call <sid>Draw(%s)<cr>', args, key, string('<lt>' .. key[1 :]))
     endfor
@@ -584,7 +589,7 @@ def MappingsInstall() #{{{2
         '>',
         'v',
         '^',
-        ]
+    ]
 
         exe printf('nno %s %s <cmd>call <sid>Draw(%s)<cr>', args, key, string(key))
     endfor
@@ -594,7 +599,7 @@ def MappingsInstall() #{{{2
         '<s-right>',
         '<s-down>',
         '<s-up>',
-        ]
+    ]
 
         exe printf('nno %s %s <cmd>call <sid>UnboundedVerticalMotion(%s)<cr>',
             args, key, string(KEY2MOTION[key]))
@@ -609,7 +614,7 @@ def MappingsInstall() #{{{2
         'k',
         'J',
         'K',
-        ]
+    ]
         exe printf('nno %s %s <cmd>call <sid>UnboundedVerticalMotion(%s)<cr>',
             args, key, tolower(key)->string())
     endfor
@@ -664,12 +669,12 @@ def ReplaceChar(key: string) #{{{2
            : cchar =~ CROSSING_KEYS[key] && cchar != KEY2CHAR[key]
            ?      INTERSECTION[key]
            :      KEY2CHAR[key]
-        )
+    )
 enddef
 
-def RestoreSelection(x0: number, y0: number, x1: number, y1: number) #{{{2
-    setpos("'>", [0, y0, x0, 0])
-    setpos("'<", [0, y1, x1, 0])
+def RestoreSelection(pos: list<list<number>>) #{{{2
+    setpos("'<", pos[0])
+    setpos("'>", pos[1])
     norm! gv
 enddef
 
@@ -716,7 +721,11 @@ def Segment(coords: list<number>, erase = false) #{{{2
     endif
 enddef
 
-def SetCharAt(char: string, x: number, y: number) #{{{2
+def SetCharAt( #{{{2
+    char: string,
+    x: number,
+    y: number
+)
     # move on line whose address is `y`
     exe ':' .. y
 
@@ -725,7 +734,7 @@ def SetCharAt(char: string, x: number, y: number) #{{{2
     if x <= 1
         exe 'norm! 0r' .. char
     else
-        exe 'norm! 0' .. (x - 1) .. 'lr' .. char
+        exe 'norm! ' .. x .. '|r' .. char
     endif
 enddef
 
@@ -738,5 +747,10 @@ def UnboundedVerticalMotion(motion: string) #{{{2
     endif
 
     exe 'norm! ' .. motion
+enddef
+#}}}1
+# Util {{{1
+def VirtcolFirstCell(filepos: string): number #{{{3
+    return virtcol([line(filepos), col(filepos) - 1]) + 1
 enddef
 
