@@ -97,10 +97,14 @@ const INTERSECTION: dict<string> = {
 # Interface {{{1
 def draw#boxPrettify(line1: number, line2: number) #{{{2
     var range: string = ':' .. line1 .. ',' .. line2
-    sil exe range .. 's/-\@1<=-\|-\ze-/─/ge'
+    exe 'sil ' .. range .. 's/\%(-\@1<=-\|-\ze-\)\l\@!/─/ge'
+    #                                            ^---^
+    #                                            ignore names of optional arguments:
+    #                                                --some-optional-argument
+    #                                            (frequently found in linux utilities)
 
     RepBar = (): string => GetCharsAround('below') =~ '[+|]' ? '│' : '|'
-    sil exe range .. 's/|/\=RepBar()/ge'
+    exe 'sil ' .. range .. 's/|/\=RepBar()/ge'
 
     RepPlus = (): string =>
         GetCharsAround('before') =~ '─'
@@ -146,7 +150,7 @@ def draw#boxPrettify(line1: number, line2: number) #{{{2
         ?    '┘'
    :         '+'
 
-    sil exe range .. 's/+/\=RepPlus()/ge'
+    exe 'sil ' .. range .. 's/+/\=RepPlus()/ge'
 enddef
 
 var RepBar: func
@@ -519,15 +523,15 @@ def Ellipse() #{{{2
 
         # pick case: (xi + 1, yi) (xi, yi - 1) (xi + 1, yi - 1)
         if aca <= acb && aca <= acc
-            xi += 1
+            ++xi
             ei = ca
         elseif acb <= aca && acb <= acc
             ei = cb
-            xi += 1
-            yi -= 1
+            ++xi
+            --yi
         else
             ei = cc
-            yi -= 1
+            --yi
         endif
         if xi > x1
             break
@@ -726,8 +730,7 @@ def SetCharAt( #{{{2
     x: number,
     y: number
 )
-    # move on line whose address is `y`
-    exe ':' .. y
+    cursor(y, 1)
 
     # move cursor on column `x` and replace the character under the cursor
     # with `char`
