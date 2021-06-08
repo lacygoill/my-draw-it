@@ -158,9 +158,9 @@ var RepPlus: func
 
 def draw#changeState(erasing_mode: bool) #{{{2
     if state == 'disabled'
-        ve_save = &ve
-        ww_save = &ww
-        sol_save = &sol
+        virtualedit_save = &virtualedit
+        whichwrap_save = &whichwrap
+        startofline_save = &startofline
 
         original_mappings_normal = MapSave([
             'm?',
@@ -232,9 +232,9 @@ def draw#changeState(erasing_mode: bool) #{{{2
 
     MappingsToggle()
 enddef
-var ve_save: string
-var ww_save: string
-var sol_save: bool
+var virtualedit_save: string
+var whichwrap_save: string
+var startofline_save: bool
 var original_mappings_visual: list<dict<any>>
 
 var original_mappings_normal: list<dict<any>>
@@ -249,9 +249,9 @@ def draw#stop() #{{{2
         MapRestore(original_mappings_visual)
     endif
 
-    &ve = ve_save
-    &ww = ww_save
-    &sol = sol_save
+    &virtualedit = virtualedit_save
+    &whichwrap = whichwrap_save
+    &startofline = startofline_save
     echom '[Drawing/Erasing] disabled'
 enddef
 #}}}1
@@ -469,9 +469,9 @@ enddef
 
 def Draw(key: string) #{{{2
     if BeyondLastLine(key)
-        append('.', '')
+        ''->append('.')
     elseif AboveFirstLine(key)
-        append(0, '')
+        ''->append(0)
     endif
 
     var keys: list<string> =<< trim END
@@ -638,11 +638,11 @@ def MappingsToggle() #{{{2
 
     else
         MappingsInstall()
-        set ve=all
+        &virtualedit = 'all'
 
         # We disable `'startofline'`, otherwise we get unintended results when
         # trying to draw a box, hitting `mb` from visual mode.
-        set nostartofline
+        &startofline = false
 
         # We remove the `h` value from `'whichwrap'`, otherwise we get
         # unintended results when drawing and reaching column 0.
@@ -743,10 +743,10 @@ enddef
 
 def UnboundedVerticalMotion(motion: string) #{{{2
     if motion == 'j' && line('.') == line('$')
-        append('.', repeat(' ', virtcol('.')))
+        repeat(' ', virtcol('.'))->append('.')
 
     elseif motion == 'k' && line('.') == 1
-        append(0, repeat(' ', virtcol('.')))
+        repeat(' ', virtcol('.'))->append(0)
     endif
 
     exe 'norm! ' .. motion
