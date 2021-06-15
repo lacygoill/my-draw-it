@@ -336,7 +336,7 @@ def Arrow(coords: list<number> = [], arg_tip = '') #{{{2
 
     # trim ending whitespace
     if exists(':TW') == 2
-        :*TW
+        :* TW
     endif
 enddef
 
