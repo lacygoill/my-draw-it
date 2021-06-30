@@ -17,7 +17,7 @@ import {
 # Why?
 # Because if  we edit the  code, while the  drawing mappings are  installed, and
 # source it,  then the next  time we  will toggle the  state of the  plugin with
-# `m_`,  `m<space>`,  `draw#changeState()` will  save  the  drawing mappings  in
+# `m_`,  `m<Space>`,  `draw#changeState()` will  save  the  drawing mappings  in
 # `original_mappings_{normal|visual}`.  From  then, we  won't be able  to remove
 # the mappings with `m|`, because the plugin will consider them as default.
 #
@@ -39,14 +39,14 @@ import {
 var state: string = 'disabled'
 
 const KEY2CHAR: dict<string> = {
-    '<left>': '-',
-    '<right>': '-',
-    '<down>': '|',
-    '<up>': '|',
-    '<pagedown>': '\',
-    '<pageup>': '/',
-    '<home>': '\',
-    '<end>': '/',
+    '<Left>': '-',
+    '<Right>': '-',
+    '<Down>': '|',
+    '<Up>': '|',
+    '<PageDown>': '\',
+    '<PageUp>': '/',
+    '<Home>': '\',
+    '<End>': '/',
     '<': '<',
     '>': '>',
     'v': 'v',
@@ -54,57 +54,57 @@ const KEY2CHAR: dict<string> = {
 }
 
 const KEY2MOTION: dict<string> = {
-    '<left>': 'h',
-    '<right>': 'l',
-    '<down>': 'j',
-    '<up>': 'k',
-    '<pagedown>': 'lj',
-    '<pageup>': 'lk',
-    '<end>': 'hj',
-    '<home>': 'hk',
+    '<Left>': 'h',
+    '<Right>': 'l',
+    '<Down>': 'j',
+    '<Up>': 'k',
+    '<PageDown>': 'lj',
+    '<PageUp>': 'lk',
+    '<End>': 'hj',
+    '<Home>': 'hk',
     '<': 'h',
     '>': 'l',
     'v': 'j',
     '^': 'k',
-    '<s-left>': 'h',
-    '<s-right>': 'l',
-    '<s-down>': 'j',
-    '<s-up>': 'k',
+    '<S-Left>': 'h',
+    '<S-Right>': 'l',
+    '<S-Down>': 'j',
+    '<S-Up>': 'k',
 }
 
 const CROSSING_KEYS: dict<string> = {
-    '<left>': '[-|+]',
-    '<right>': '[-|+]',
-    '<down>': '[-|+]',
-    '<up>': '[-|+]',
-    '<pagedown>': '[\/X]',
-    '<pageup>': '[\/X]',
-    '<end>': '[\/X]',
-    '<home>': '[\/X]',
+    '<Left>': '[-|+]',
+    '<Right>': '[-|+]',
+    '<Down>': '[-|+]',
+    '<Up>': '[-|+]',
+    '<PageDown>': '[\/X]',
+    '<PageUp>': '[\/X]',
+    '<End>': '[\/X]',
+    '<Home>': '[\/X]',
 }
 
 const INTERSECTION: dict<string> = {
-    '<left>': '+',
-    '<right>': '+',
-    '<down>': '+',
-    '<up>': '+',
-    '<pagedown>': 'X',
-    '<pageup>': 'X',
-    '<end>': 'X',
-    '<home>': 'X',
+    '<Left>': '+',
+    '<Right>': '+',
+    '<Down>': '+',
+    '<Up>': '+',
+    '<PageDown>': 'X',
+    '<PageUp>': 'X',
+    '<End>': 'X',
+    '<Home>': 'X',
 }
 
 # Interface {{{1
 def draw#boxPrettify(line1: number, line2: number) #{{{2
     var range: string = ':' .. line1 .. ',' .. line2
-    exe 'sil ' .. range .. 's/\%(-\@1<=-\|-\ze-\)\l\@!/─/ge'
-    #                                            ^---^
-    #                                            ignore names of optional arguments:
-    #                                                --some-optional-argument
-    #                                            (frequently found in linux utilities)
+    execute 'silent ' .. range .. 'substitute/\%(-\@1<=-\|-\ze-\)\l\@!/─/ge'
+    #                                                            ^---^
+    #                                                            ignore names of optional arguments:
+    #                                                                --some-optional-argument
+    #                                                            (frequently found in linux utilities)
 
     RepBar = (): string => GetCharsAround('below') =~ '[+|]' ? '│' : '|'
-    exe 'sil ' .. range .. 's/|/\=RepBar()/ge'
+    execute 'silent ' .. range .. 'substitute/|/\=RepBar()/ge'
 
     RepPlus = (): string =>
         GetCharsAround('before') =~ '─'
@@ -150,7 +150,7 @@ def draw#boxPrettify(line1: number, line2: number) #{{{2
         ?    '┘'
    :         '+'
 
-    exe 'sil ' .. range .. 's/+/\=RepPlus()/ge'
+    execute 'silent ' .. range .. 'substitute/+/\=RepPlus()/ge'
 enddef
 
 var RepBar: func
@@ -164,18 +164,18 @@ def draw#changeState(erasing_mode: bool) #{{{2
 
         original_mappings_normal = MapSave([
             'm?',
-            '<left>',
-            '<right>',
-            '<down>',
-            '<up>',
-            '<s-left>',
-            '<s-right>',
-            '<s-down>',
-            '<s-up>',
-            '<pagedown>',
-            '<pageup>',
-            '<end>',
-            '<home>',
+            '<Left>',
+            '<Right>',
+            '<Down>',
+            '<Up>',
+            '<S-Left>',
+            '<S-Right>',
+            '<S-Down>',
+            '<S-Up>',
+            '<PageDown>',
+            '<PageUp>',
+            '<End>',
+            '<Home>',
             '<',
             '>',
             'v',
@@ -252,7 +252,7 @@ def draw#stop() #{{{2
     &virtualedit = virtualedit_save
     &whichwrap = whichwrap_save
     &startofline = startofline_save
-    echom '[Drawing/Erasing] disabled'
+    echomsg '[Drawing/Erasing] disabled'
 enddef
 #}}}1
 # Core {{{1
@@ -262,7 +262,7 @@ def AboveFirstLine(key: string): bool #{{{2
 enddef
 
 def BeyondLastLine(key: string): bool #{{{2
-    return index(['<down>', '<pagedown>', '<end>', 'v'], key) >= 0
+    return index(['<Down>', '<PageDown>', '<End>', 'v'], key) >= 0
         && state == 'drawing' && line('.') == line('$')
 enddef
 
@@ -378,7 +378,7 @@ def ArrowCycle(is_fwd: bool) #{{{2
 
     if y0 == y1
     # horizontal arrow
-        exe 'norm! ' .. (values(cur_arrow)[0] == '<'
+        execute 'normal! ' .. (values(cur_arrow)[0] == '<'
             ? x1 .. '|r>' .. x0
             : x0 .. '|r<' .. x1
             ) .. '|r_'
@@ -386,7 +386,7 @@ def ArrowCycle(is_fwd: bool) #{{{2
 
     elseif x0 == x1
     # vertical arrow
-        exe 'norm! ' .. (values(cur_arrow)[0] == 'v'
+        execute 'normal! ' .. (values(cur_arrow)[0] == 'v'
             ? y0 .. 'Gr^' .. y1
             : y1 .. 'Grv' .. y0
             ) .. 'Gr|'
@@ -451,12 +451,12 @@ def Box() #{{{2
     var visual_marks_pos = [getpos("'<"), getpos("'>")]
 
     # draw the horizontal sides of the box
-    exe 'norm! ' .. y0 .. 'G' .. x0 .. '|v' .. x1 .. '|r-'
-    exe 'norm! ' .. y1 .. 'G' .. x0 .. '|v' .. x1 .. '|r-'
+    execute 'normal! ' .. y0 .. 'G' .. x0 .. '|v' .. x1 .. '|r-'
+    execute 'normal! ' .. y1 .. 'G' .. x0 .. '|v' .. x1 .. '|r-'
 
     # draw the vertical sides of the box
-    exe 'norm! ' .. y0 .. 'G' .. x0 .. "|\<C-v>" .. y1 .. 'Gr|'
-    exe 'norm! ' .. y1 .. 'G' .. x1 .. "|\<C-v>" .. y0 .. 'Gr|'
+    execute 'normal! ' .. y0 .. 'G' .. x0 .. "|\<C-v>" .. y1 .. 'Gr|'
+    execute 'normal! ' .. y1 .. 'G' .. x1 .. "|\<C-v>" .. y0 .. 'Gr|'
 
     # draw the corners of the box
     SetCharAt('+', x0, y0)
@@ -475,21 +475,21 @@ def Draw(key: string) #{{{2
     endif
 
     var keys: list<string> =<< trim END
-        <left>
-        <right>
-        <down>
-        <up>
-        <pagedown>
-        <pageup>
-        <end>
+        <Left>
+        <Right>
+        <Down>
+        <Up>
+        <PageDown>
+        <PageUp>
+        <End>
     END
     if index(keys, key) >= 0
         ReplaceChar(key)
-        exe 'norm! ' .. KEY2MOTION[key]
+        execute 'normal! ' .. KEY2MOTION[key]
         ReplaceChar(key)
 
     elseif key =~ "[v^<>]"
-        exe 'norm! r' .. KEY2CHAR[key] .. KEY2MOTION[key] .. 'r' .. KEY2CHAR[key]
+        execute 'normal! r' .. KEY2CHAR[key] .. KEY2MOTION[key] .. 'r' .. KEY2CHAR[key]
     endif
 enddef
 
@@ -575,17 +575,17 @@ def MappingsInstall() #{{{2
     var args: string = ' <nowait> '
 
     for key in [
-        '<left>',
-        '<right>',
-        '<down>',
-        '<up>',
-        '<pagedown>',
-        '<pageup>',
-        '<home>',
-        '<end>',
+        '<Left>',
+        '<Right>',
+        '<Down>',
+        '<Up>',
+        '<PageDown>',
+        '<PageUp>',
+        '<Home>',
+        '<End>',
     ]
 
-        exe printf('nno %s %s <cmd>call <sid>Draw(%s)<cr>', args, key, string('<lt>' .. key[1 :]))
+        execute printf('nnoremap %s %s <Cmd>call <SID>Draw(%s)<CR>', args, key, string('<lt>' .. key[1 :]))
     endfor
 
     for key in [
@@ -595,22 +595,22 @@ def MappingsInstall() #{{{2
         '^',
     ]
 
-        exe printf('nno %s %s <cmd>call <sid>Draw(%s)<cr>', args, key, string(key))
+        execute printf('nnoremap %s %s <Cmd>call <SID>Draw(%s)<CR>', args, key, string(key))
     endfor
 
     for key in [
-        '<s-left>',
-        '<s-right>',
-        '<s-down>',
-        '<s-up>',
+        '<S-Left>',
+        '<S-Right>',
+        '<S-Down>',
+        '<S-Up>',
     ]
 
-        exe printf('nno %s %s <cmd>call <sid>UnboundedVerticalMotion(%s)<cr>',
+        execute printf('nnoremap %s %s <Cmd>call <SID>UnboundedVerticalMotion(%s)<CR>',
             args, key, string(KEY2MOTION[key]))
     endfor
 
     for key in ['H', 'L']
-        exe printf('nno %s %s 3%s', args, key, tolower(key))
+        execute printf('nnoremap %s %s 3%s', args, key, tolower(key))
     endfor
 
     for key in [
@@ -619,17 +619,17 @@ def MappingsInstall() #{{{2
         'J',
         'K',
     ]
-        exe printf('nno %s %s <cmd>call <sid>UnboundedVerticalMotion(%s)<cr>',
+        execute printf('nnoremap %s %s <Cmd>call <SID>UnboundedVerticalMotion(%s)<CR>',
             args, key, tolower(key)->string())
     endfor
 
-    xno <nowait> ma <c-\><c-n><cmd>call <sid>Arrow()<cr>
-    xno <nowait> mb <c-\><c-n><cmd>call <sid>Box()<cr>
-    xno <nowait> me <c-\><c-n><cmd>call <sid>Ellipse()<cr>
-    xno <nowait> mm <c-\><c-n><cmd>call <sid>ArrowCycle(v:true)<cr>
-    xno <nowait> mM <c-\><c-n><cmd>call <sid>ArrowCycle(v:false)<cr>
+    xnoremap <nowait> ma <C-\><C-N><Cmd>call <SID>Arrow()<CR>
+    xnoremap <nowait> mb <C-\><C-N><Cmd>call <SID>Box()<CR>
+    xnoremap <nowait> me <C-\><C-N><Cmd>call <SID>Ellipse()<CR>
+    xnoremap <nowait> mm <C-\><C-N><Cmd>call <SID>ArrowCycle(v:true)<CR>
+    xnoremap <nowait> mM <C-\><C-N><Cmd>call <SID>ArrowCycle(v:false)<CR>
 
-    nno <nowait> m? <cmd>call draw#stop() <bar> h my-draw-it<cr>
+    nnoremap <nowait> m? <Cmd>call draw#stop() <Bar> help my-draw-it<CR>
 enddef
 
 def MappingsToggle() #{{{2
@@ -648,7 +648,7 @@ def MappingsToggle() #{{{2
         # unintended results when drawing and reaching column 0.
         set whichwrap-=h
 
-        echom '[' .. state->substitute('.', '\u&', '') .. '] ' .. 'enabled'
+        echomsg '[' .. state->substitute('.', '\u&', '') .. '] ' .. 'enabled'
     endif
 enddef
 
@@ -667,7 +667,7 @@ def ReplaceChar(key: string) #{{{2
 
     var cchar: string = getline('.')[charcol('.') - 1]
 
-    exe 'norm! r'
+    execute 'normal! r'
         .. (state == 'erasing'
            ?    ' '
            : cchar =~ CROSSING_KEYS[key] && cchar != KEY2CHAR[key]
@@ -679,7 +679,7 @@ enddef
 def RestoreSelection(pos: list<list<number>>) #{{{2
     setpos("'<", pos[0])
     setpos("'>", pos[1])
-    norm! gv
+    normal! gv
 enddef
 
 def Segment(coords: list<number>, erase = false) #{{{2
@@ -711,10 +711,10 @@ def Segment(coords: list<number>, erase = false) #{{{2
         :     '\'
 
     if x0 == x1
-        exe 'norm! ' .. y0 .. 'G' .. x0 .. "|\<C-v>" .. y1 .. 'Gr' .. rchar
+        execute 'normal! ' .. y0 .. 'G' .. x0 .. "|\<C-v>" .. y1 .. 'Gr' .. rchar
 
     elseif y0 == y1
-        exe 'norm! ' .. y0 .. 'G' .. x0 .. "|\<C-v>" .. x1 .. '|r' .. rchar
+        execute 'normal! ' .. y0 .. 'G' .. x0 .. "|\<C-v>" .. x1 .. '|r' .. rchar
 
     else
         for i in range(x0, x0 + abs(y1 - y0))
@@ -735,9 +735,9 @@ def SetCharAt( #{{{2
     # move cursor on column `x` and replace the character under the cursor
     # with `char`
     if x <= 1
-        exe 'norm! 0r' .. char
+        execute 'normal! 0r' .. char
     else
-        exe 'norm! ' .. x .. '|r' .. char
+        execute 'normal! ' .. x .. '|r' .. char
     endif
 enddef
 
@@ -749,7 +749,7 @@ def UnboundedVerticalMotion(motion: string) #{{{2
         repeat(' ', virtcol('.'))->append(0)
     endif
 
-    exe 'norm! ' .. motion
+    execute 'normal! ' .. motion
 enddef
 #}}}1
 # Util {{{1
