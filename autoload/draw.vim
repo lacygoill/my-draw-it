@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 # TODO: allow moving visual selection beyond first/last line
 
 # Init {{{1
@@ -334,10 +331,7 @@ def Arrow(coords: list<number> = [], arg_tip = '') #{{{2
 
     RestoreSelection(visual_marks_pos)
 
-    # trim ending whitespace
-    if exists(':TW') == 2
-        :* TW
-    endif
+    silent! :* TrimWhitespace
 enddef
 
 def ArrowCycle(is_fwd: bool) #{{{2
@@ -378,7 +372,7 @@ def ArrowCycle(is_fwd: bool) #{{{2
 
     if y0 == y1
     # horizontal arrow
-        execute 'normal! ' .. (values(cur_arrow)[0] == '<'
+        execute 'normal! ' .. (cur_arrow->values()[0] == '<'
             ? x1 .. '|r>' .. x0
             : x0 .. '|r<' .. x1
             ) .. '|r_'
@@ -386,7 +380,7 @@ def ArrowCycle(is_fwd: bool) #{{{2
 
     elseif x0 == x1
     # vertical arrow
-        execute 'normal! ' .. (values(cur_arrow)[0] == 'v'
+        execute 'normal! ' .. (cur_arrow->values()[0] == 'v'
             ? y0 .. 'Gr^' .. y1
             : y1 .. 'Grv' .. y0
             ) .. 'Gr|'
@@ -396,7 +390,7 @@ def ArrowCycle(is_fwd: bool) #{{{2
     # diagonal arrow
 
         # Ex: B>, Cv, A^, ...
-        var cur_state: string = keys(cur_arrow)[0] .. values(cur_arrow)[0]
+        var cur_state: string = cur_arrow->keys()[0] .. cur_arrow->values()[0]
         var states: list<string> =<< trim END
             A<
             A^
