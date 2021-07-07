@@ -568,7 +568,7 @@ enddef
 def MappingsInstall() #{{{2
     var args: string = ' <nowait> '
 
-    for key in [
+    for key: string in [
         '<Left>',
         '<Right>',
         '<Down>',
@@ -582,7 +582,7 @@ def MappingsInstall() #{{{2
         execute printf('nnoremap %s %s <Cmd>call <SID>Draw(%s)<CR>', args, key, string('<lt>' .. key[1 :]))
     endfor
 
-    for key in [
+    for key: string in [
         '<',
         '>',
         'v',
@@ -592,7 +592,7 @@ def MappingsInstall() #{{{2
         execute printf('nnoremap %s %s <Cmd>call <SID>Draw(%s)<CR>', args, key, string(key))
     endfor
 
-    for key in [
+    for key: string in [
         '<S-Left>',
         '<S-Right>',
         '<S-Down>',
@@ -603,11 +603,11 @@ def MappingsInstall() #{{{2
             args, key, string(KEY2MOTION[key]))
     endfor
 
-    for key in ['H', 'L']
+    for key: string in ['H', 'L']
         execute printf('nnoremap %s %s 3%s', args, key, tolower(key))
     endfor
 
-    for key in [
+    for key: string in [
         'j',
         'k',
         'J',
@@ -711,7 +711,7 @@ def Segment(coords: list<number>, erase = false) #{{{2
         execute 'normal! ' .. y0 .. 'G' .. x0 .. "|\<C-v>" .. x1 .. '|r' .. rchar
 
     else
-        for i in range(x0, x0 + abs(y1 - y0))
+        for i: number in range(x0, x0 + abs(y1 - y0))
             # if y0 > y1, we must decrement the line address, otherwise
             # increment
             SetCharAt(rchar, i, y0 + (y0 > y1 ? (x0 - i) : (i - x0)))
